@@ -5,10 +5,11 @@ import firebase from "firebase/app";
 import "firebase/auth";
 import "firebase/firestore";
 
+require('dotenv').config();
 
 // firebase init goes here
 const config = {
-	apiKey: "AIzaSyB0SCK29mxSPx8nE1wApGI3C06djW_9djo",
+	apiKey: process.env.API_KEY,
     authDomain: "terinv-9ed4b.firebaseapp.com",
     databaseURL: "https://terinv-9ed4b.firebaseio.com",
     projectId: "terinv-9ed4b",
