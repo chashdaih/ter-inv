@@ -10,8 +10,10 @@
                 <b-table-column field="data.lastName" label="Apellido paterno" sortable>{{ props.row.data.lastName }}</b-table-column>
                 <b-table-column field="data.mothersName" label="Apellido materno" sortable>{{ props.row.data.mothersName }}</b-table-column>
                 <b-table-column field="data.userType" label="Tipo de usuario" sortable>{{ props.row.data.userType == 2 ? 'Supervisor' : 'Estudiante' }}</b-table-column>
+                <b-table-column label="Cantidad de usuarios referidos" sortable>{{ props.row.data.refsTimes || '0' }}</b-table-column>
+                <b-table-column field="data.disabled" label="Estatus" sortable>{{ props.row.data.disabled ? 'Deshabilitado': 'Habilitado' }}</b-table-column>
                 <b-table-column field="id" label="Datos del supervisor o estudiante" >
-                    <router-link :to="'/supervisores/' +  props.row.id" class="button">Ver/Editar</router-link>
+                    <router-link :to="'/supervisores/' +  props.row.id" class="button">Ver</router-link>
                 </b-table-column>
             </template>
         </b-table>

@@ -7,7 +7,7 @@
           <side-menu v-if="currentUser"></side-menu>
         </div>
         <div class="column"> -->
-          <div class="container">
+          <div class="container grid">
             <router-view/>
           </div>
         <!-- </div>
@@ -29,3 +29,17 @@ export default {
   }
 }
 </script>
+
+<style>
+  .grid {
+    display: grid;
+    grid-template-columns: [xl-start] 1fr 1.5rem [md-start] minmax(0, 960px) [md-end] 1.5rem 1fr [xl-end];
+  }
+
+  .grid * {
+    grid-column: md;
+  }
+  /* .grid-xl {
+    grid-column: xl;
+  } */
+</style>

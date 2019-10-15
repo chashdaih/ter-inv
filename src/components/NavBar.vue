@@ -1,15 +1,24 @@
 <template>
-    <nav class="navbar is-info" role="navigation" aria-label="main navigation">
-        <div class="navbar-menu">
+    <nav class="navbar" :class="navColor" role="navigation" aria-label="main navigation">
+        <div class="navbar-brand">
+            <a href="https://psicologia.unam.mx" class="navbar-item">
+                <img src="img/psiw.png" alt="Logo facultad Psicología UNAM" />
+            </a>
+            <a role="button" class="navbar-burger burger" :class="{'is-active': isActive}" @click="toggleMenu" aria-label="menu" aria-expanded="false">
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+            </a>
+        </div>
+        <div class="navbar-menu" :class="{'is-active': isActive}">
             <div class="navbar-start">
-                <router-link class="navbar-item" to="/">Inicio</router-link>
+                <router-link v-if="$store.state.userProfile.userType < 3" class="navbar-item" to="/usuarios">Usuarios</router-link>
                 <router-link v-if="$store.state.userProfile.userType == 2"  class="navbar-item" to="/supervisores">Supervisores/Estudiantes</router-link>
                 <router-link v-if="$store.state.userProfile.userType == 2"  class="navbar-item" to="/terapeutas">Terapeutas invitados</router-link>
-                <router-link v-if="$store.state.userProfile.userType < 3" class="navbar-item" to="/usuarios">Usuarios</router-link>
                 <router-link v-if="$store.state.userProfile.userType == 3" class="navbar-item" to="/mis-usuarios">Usuarios referenciados</router-link>
             </div>
             <div class="navbar-end">
-                <router-link class="navbar-item" to="/">Editar mis datos</router-link>
+                <router-link class="navbar-item" to="/mis-datos">Editar mis datos</router-link>
                 <div class="navbar-item">
                     <a class="button is-light" @click="logout">Cerrar sesión</a>
                 </div>
@@ -19,9 +28,26 @@
 </template>
 
 <script>
-const fb = require('@/firebaseConfig.js')
+const fb = require('@/firebaseConfig.js');
 
 export default {
+    data() {
+        return {
+            isActive: false,
+        }
+    },
+    computed: {
+        navColor() {
+            const type = this.$store.state.userProfile.userType;
+            if (type == 1) {
+                return 'is-info';
+            } else if (type == 2) {
+                return 'is-dark';
+            } else {
+                return 'is-link';
+            }
+        }
+    },
     methods: {
         logout() {
             fb.auth.signOut()
@@ -30,6 +56,9 @@ export default {
                 this.$router.push('/login')
             })
             .catch(err=>console.log(err))
+        },
+        toggleMenu() {
+            this.isActive = !this.isActive;
         }
     }
 }

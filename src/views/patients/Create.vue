@@ -20,56 +20,113 @@
             <div class="card-content">
                 <div class="content"> -->
                     <!-- <ValidationObserver ref="observer" v-slot="{ passes }"> -->
-                        <BInputVal rules="required" type="text" label="Nombre" v-model="signupForm.name" placeholder="Nombre" />
-                        <BInputVal rules="required" type="text" label="Apellido paterno" v-model="signupForm.lastName" placeholder="Apellido paterno" />
-                        <BInputVal rules="required" type="text" label="Apellido materno" v-model="signupForm.mothersName" placeholder="Apellido materno" />
-                        <BInputVal rules="required" type="date" label="Fecha de nacimiento" v-model="signupForm.birthdate" placeholder="Fecha de nacimiento" />
-                        <BInputVal rules="" type="text" label="Teléfono casa" v-model="signupForm.phoneHome" placeholder="Teléfono casa (opcional)" />
-                        <BInputVal rules="" type="text" label="Teléfono celular" v-model="signupForm.phoneCell" placeholder="Teléfono celular (opcional)" />
-                        <BInputVal rules="" type="text" label="Teléfono trabajo" v-model="signupForm.phoneWork" placeholder="Teléfono trabajo (opcional)" />
-                        <BInputVal rules="email" type="email" label="Correo electrónico" v-model="signupForm.email" placeholder="Correo (opcional)" />
-                        <BSelectVal rules="required" label="¿Pertenece a la UNAM?" v-model="signupForm.isUnam">
+                        <BInputVal rules="required" type="text" label="Nombre" v-model="patient.name" placeholder="Nombre" />
+                        <BInputVal rules="required" type="text" label="Apellido paterno" v-model="patient.lastName" placeholder="Apellido paterno" />
+                        <BInputVal rules="required" type="text" label="Apellido materno" v-model="patient.mothersName" placeholder="Apellido materno" />
+                        <BInputVal rules="required" type="date" label="Fecha de nacimiento" v-model="patient.birthdate" placeholder="Fecha de nacimiento" />
+                        <BInputVal rules="" type="text" label="Teléfono casa" v-model="patient.phoneHome" placeholder="Teléfono casa (opcional)" />
+                        <BInputVal rules="" type="text" label="Teléfono celular" v-model="patient.phoneCell" placeholder="Teléfono celular (opcional)" />
+                        <BInputVal rules="" type="text" label="Teléfono trabajo" v-model="patient.phoneWork" placeholder="Teléfono trabajo (opcional)" />
+                        <BInputVal rules="email" type="email" label="Correo electrónico" v-model="patient.email" placeholder="Correo (opcional)" />
+                        <BSelectVal rules="required" label="¿Pertenece a la UNAM?" v-model="patient.isUnam">
                             <option value=false>No</option>
                             <option value=true>Si</option>
                         </BSelectVal>
-                        <BInputVal rules="required" type="text" label="Número de cuenta/CURP/trabajador UNAM" v-model="signupForm.curp" placeholder="Número de cuenta/CURP/trabajador UNAM" />
-                        <BInputVal rules="required" type="text" label="Estado" v-model="signupForm.estado" placeholder="Estado" />
-                        <BInputVal rules="required" type="text" label="Municipio" v-model="signupForm.municipio" placeholder="Municipio" />
-                        <BSelectVal rules="required" label="Estado civil" v-model="signupForm.maritalStatus">
+                        <BInputVal rules="required" type="text" label="Número de cuenta/CURP/trabajador UNAM" v-model="patient.curp" placeholder="Número de cuenta/CURP/trabajador UNAM" />
+                        <a href="https://www.gob.mx/curp/" class="button is-info" target="_blank">
+                            <span>Ir a página para buscar el CURP</span>
+                            <span class="icon">
+                                <b-icon
+                                    pack="fas"
+                                    icon="external-link-alt"
+                                    size="is-small">
+                                </b-icon>
+                            </span>
+                        </a>
+                        <!-- <BInputVal rules="required" type="text" label="Estado" v-model="patient.estado" placeholder="Estado" />
+                        <BInputVal rules="required" type="text" label="Municipio" v-model="patient.municipio" placeholder="Municipio" /> -->
+                        <div class="field">
+                            <label class="label">Estado</label>
+                            <div class="control">
+                                <div class="select">
+                                    <select v-model="patient.estado" @change="changeAlMun">
+                                        <option value="CDMX">CDMX</option>
+                                        <option value="edoMex">Estado de México</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div v-if="patient.estado=='CDMX'" class="field">
+                            <label class="label">Alcaldía</label>
+                            <div class="control">
+                                <div class="select">
+                                    <select v-model="patient.alcaldia">
+                                        <option v-for="(al, idx) in alcaldias" :key="idx" :value="al">{{al}}</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div v-else class="field">
+                            <label class="label">Municipio</label>
+                            <div class="control">
+                                <div class="select">
+                                    <select v-model="patient.municipio">
+                                        <option v-for="(mun, idx) in municipios" :key="idx" :value="mun">{{mun}}</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="label">Dirección</label>
+                            <div class="control">
+                                <input type="text" class="input" placeholder="Dirección (opcional)" v-model="patient.address">
+                            </div>
+                        </div>
+                        <BSelectVal rules="required" label="Estado civil" v-model="patient.maritalStatus">
                             <option v-for="(type, idx) in maritalStatuses" :key=idx :value="idx">{{ type }}</option>
                         </BSelectVal>
-                        <BInputVal rules="required" type="text" label="Ocupación" v-model="signupForm.occupation" placeholder="Ocupación" />
-                        <BInputVal rules="required" type="text" label="Motivo de llamada" v-model="signupForm.callReason" placeholder="Motivo de llamada" />
-                        <BSelectVal rules="required" label="Tipo de atención" v-model="signupForm.attentionType">
+                        <BInputVal rules="required" type="text" label="Ocupación" v-model="patient.occupation" placeholder="Ocupación" />
+                        <!-- <BInputVal rules="required" type="text" label="Motivo de llamada" v-model="patient.callReason" placeholder="Motivo de llamada" /> -->
+                        <BSelectVal rules="required" label="Modalidad de supervisión" v-model="patient.attentionType">
                             <option v-for="(type, idx) in attentionTypes" :key=idx :value="idx">{{ type }}</option>
                         </BSelectVal>
-                        <BSelectVal rules="required" label="Tipo de atención solicitada" v-model="signupForm.askedAttention">
+                        <BSelectVal rules="required" label="Tipo de servicio" v-model="patient.askedAttention">
                             <option v-for="(type, idx) in askedAttentions" :key=idx :value="idx">{{ type }}</option>
                         </BSelectVal>
-                        <BSelectVal rules="required" label="Tipo de paciente" v-model="signupForm.patientType">
+                        <!-- <BSelectVal rules="required" label="Tipo de paciente" v-model="patient.patientType">
                             <option v-for="(type, idx) in patientTypes" :key=idx :value="idx">{{ type }}</option>
-                        </BSelectVal>
-                        <BSelectVal rules="required" label="Tipo de orientación solicitada" v-model="signupForm.askedType">
+                        </BSelectVal> -->
+                        <BSelectVal rules="required" label="Orientación solicitada" v-model="patient.askedType">
                             <option v-for="(type, idx) in askedTypes" :key=idx :value="idx">{{ type }}</option>
                         </BSelectVal>
                         <!-- preconsulta -->
                         <div class="field">
-                            <label class="label">Motivos del paciente para solicitar terapia</label>
-                            <p class="is-italic">Describa la problemática o motivo por el cual desea ayuda psicológica en este centro.</p>
+                            <label class="label">Motivo de la persona para solicitar atención psicológica</label>
+                            <p class="is-italic">Describa la problemática o motivo por el cual solicita el programa de terapeuta invitado.</p>
                             <div class="control">
-                                <textarea class="textarea" v-model="signupForm.reason" ></textarea>
+                                <textarea class="textarea" v-model="patient.reason" ></textarea>
                             </div>
                         </div>
-                            <br>
+                        <div class="field">
+                            <label class="label">Síntoma principal</label>
+                            <div class="control">
+                                <div class="select">
+                                    <select v-model="patient.mainProblem">
+                                        <option v-for="symptom in symptomsList" :key="symptom" :value="symptom">{{symptom}}</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
                         <div class="field">
                             <label class="label">Listado de criterios (Sintomatología detectada por el terapeuta)</label>
-                            <p class="is-italic">Seleccione sólo aquellas problemáticas que le estén afectando en la actualidad. (Obligatorio marcar al menos uno)</p>
-                            <div class="control" v-for="(cat,idx) in problems" :key="idx">
-                                <label class="checkbox"><input type="checkbox" v-model="signupForm.catalog[cat.toLowerCase().split(' ').join('')]"> {{cat}}</label>
+                            <p class="is-italic">Seleccione sólo aquellas problemáticas que le estén afectando en la actualidad</p>
+                            <div class="control" v-for="(symptom,idx) in symptomsList" :key="idx">
+                                <label class="checkbox"><input type="checkbox" v-model="patient.symptoms[symptomsList[idx]]"> {{symptom}}</label>
                             </div>
                         </div>
 
-                        <b-button v-if="!patientId" type="is-info" @click="signup" :loading="performingRequest" >Registrar</b-button>
+                        <!-- <b-button v-if="!patientId" type="is-info" @click="signup" :loading="performingRequest" >Registrar</b-button> -->
+                        <a v-if="!patientId" @click="signup" class="button is-info" :class="{'is-loading': performingRequest}">Registrar</a>
                         <a v-else class="button is-info" :class="{'is-loading': performingRequest}" @click="update"> Actualizar</a>
                     <!-- </ValidationObserver> -->
                 </div>
@@ -86,7 +143,8 @@ import { ValidationObserver } from 'vee-validate'
 import BInputVal from '@/components/inputs/BInputVal'
 import BSelectVal from '@/components/inputs/BSelectVal'
 
-import { attentionTypes, maritalStatuses, askedAttentions, patientTypes, askedTypes, problems } from '@/constants.js';
+import { attentionTypes, maritalStatuses, askedAttentions, patientTypes, askedTypes, problems, alcaldias, municipios } from '@/constants.js';
+import {generateKeywords} from '@/utils.js';
 
 export default {
     components: {
@@ -94,15 +152,30 @@ export default {
         BInputVal,
         BSelectVal
     },
+    props: {
+        alcaldias: {
+            type: Array,
+            default: () => (alcaldias),
+        },
+        municipios: {
+            type: Array,
+            default: () => (municipios),
+        },
+        symptomsList: {
+            type: Array,
+            default: () => (problems),
+        },
+        attentionTypes: { type: Array, default: () => (attentionTypes) },
+        maritalStatuses: { type: Array, default: () => (maritalStatuses) },
+        askedAttentions: { type: Array, default: () => (askedAttentions) },
+        patientTypes: { type: Array, default: () => (patientTypes) },
+        askedTypes: { type: Array, default: () => (askedTypes) },
+    },
     data() {
-        let catalog = {};
-        for (let problem of problems) {
-            catalog[problem.toLowerCase().split(' ').join('')] = false;
-        }
         return {
             patientId:null,
-            signupForm: {
-                name: '',
+            patient: {
+                name: null,
                 lastName: '',
                 mothersName: '',
                 birthdate: '',
@@ -112,8 +185,10 @@ export default {
                 email: '',
                 isUnam: false,
                 curp: '',
-                estado: '',
-                municipio: '',
+                estado: 'CDMX',
+                alcaldia: alcaldias[0],
+                municipio: null,
+                address: null,
                 maritalStatus: 0,
                 education: 0,
                 occupation: '',
@@ -123,14 +198,9 @@ export default {
                 patientType: 0,
                 askedType: 0,
                 reason: '',
-                catalog,
+                symptoms: {},
+                mainProblem: this.symptomsList[0],
             },
-            problems,
-            attentionTypes,
-            maritalStatuses,
-            askedAttentions,
-            patientTypes,
-            askedTypes,
             performingRequest: false,
             fbErrors: {},
             errorsExist: false
@@ -139,9 +209,11 @@ export default {
     methods: {
         signup() {
             this.performingRequest = true;
-            let newPatient = this.signupForm;
+            let newPatient = this.patient;
             newPatient.registeredBy = this.$store.state.currentUser.uid;
-            newPatient.assignations = null;
+            newPatient.status = 'Por referir';
+            newPatient.createdAt = fb.firebase.firestore.FieldValue.serverTimestamp();
+            newPatient.keywords = generateKeywords([this.patient.name, this.patient.lastName, this.patient.mothersName]);
             fb.patientsCollection.add(newPatient)
             .then(()=>{
                 Swal.fire({
@@ -160,19 +232,18 @@ export default {
                    confirmButtonText: 'Aceptar' 
                 });
             })
-            .catch(err=>console.log(err))
             .finally(this.performingRequest=false);
         },
         getPatient() {
             fb.patientsCollection.doc(this.patientId).get()
             .then(res=>{
-                this.signupForm = res.data();
+                this.patient = res.data();
             })
             .catch(err=>console.log(err))
         },
         update() {
             this.performingRequest = true;
-            fb.patientsCollection.doc(this.patientId).update(this.signupForm)
+            fb.patientsCollection.doc(this.patientId).update(this.patient)
             .then(()=>{
                 Swal.fire({
                     title: 'Éxito',
@@ -191,7 +262,16 @@ export default {
                 });
             })
             .finally(()=>this.performingRequest=false)
-        }
+        },
+        changeAlMun() {
+            if (this.patient.estado == "CDMX") {
+                this.patient.municipio = null;
+                this.patient.alcaldia = alcaldias[0];
+            } else {
+                this.patient.municipio = municipios[0];
+                this.patient.alcaldia = null;
+            }
+        },
     },
     mounted() {
         this.patientId = this.$route.params.id;

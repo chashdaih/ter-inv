@@ -1,0 +1,263 @@
+<template>
+    <div>
+        <template v-if="userProfile.userType < 3">
+            <nav class="breadcrumb">
+                <ul>
+                    <li><router-link to="/">Inicio</router-link></li>
+                    <li><router-link to="/terapeutas">Terapeutas</router-link></li>
+                    <li><router-link :to="'/terapeutas/' + therapistId">{{fullName}}</router-link></li>
+                    <li class="is-active"><a href="#" aria-current="page">Usuarios referidos </a></li>
+                </ul>
+            </nav>
+            <h1 class="title">Usuarios referidos al terapeuta {{fullName}}</h1>
+        </template>
+        <h1 v-else class="title">Usuarios referenciados</h1>
+        <!-- <table v-if="refers.length > 0" class="table is-fullwidth">
+            <thead>
+                <tr>
+                    <th>Nombre del paciente</th>
+                    <th>Fecha de referencia</th>
+                    <th>Estatus de la atención</th>
+                    <th>Datos del paciente</th>
+                    <th>Sesiones planeadas</th>
+                    <th>Sesiones registradas</th>
+                    <th>Listado de sesiones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="(refer, i) in refers" :key="i">
+                    <td>{{refer.data.patientName}}</td>
+                    <td>{{refer.data.timestamp.toDate().toISOString().split("T")[0]}}</td>
+                    <td>{{refer.data.status}}</td>
+                    <td>
+                        
+                    </td>
+                    <td><a @click.prevent="showModal(refer.id)" class="button is-light" :class="{'is-loading':updating}">{{refer.data.expectedAppts}}</a></td>
+                    <td>{{}}</td>
+                    <td>
+                        <router-link class="button is-info" :to="'/usuarios/' + refer.data.patientId + '/referencias/' + refer.id">Ir</router-link>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <p v-else class="is-italic">No tiene ningún usuario referenciado.</p> -->
+        <b-table :data="refers" :loading="loading">
+            <template slot-scope="props">
+                <b-table-column label="Nombre del paciente">{{props.row.data.patientName}}</b-table-column>
+                <b-table-column label="Fecha de referenciación">{{props.row.data.timestamp.toDate().toISOString().split("T")[0]}}</b-table-column>
+                <b-table-column label="Estatus de la referenciación"><span class="tag">{{props.row.data.status}}</span></b-table-column>
+                <b-table-column label="Datos del paciente"><router-link class="button is-success" :to="'/usuarios/' + props.row.data.patientId">Ver</router-link></b-table-column>
+                <b-table-column label="Sesiones planeadas"><a @click.prevent="showModal(props.row.id)" class="button is-light" :class="{'is-loading':updating}">{{props.row.data.expectedAppts}}</a></b-table-column>
+                <b-table-column label="Sesiones registradas">{{regSessions(props.row.data.sessions)}}</b-table-column>
+                <b-table-column label="Listado de sesiones"><router-link class="button is-info" :to="'/usuarios/' + props.row.data.patientId + '/referencias/' + props.row.id">Ir</router-link></b-table-column>
+                <b-table-column v-if="userProfile.userType > 1" label="Dar de Alta/Baja a usuario"><a @click.prevent="showStatusModal(props.row.id, props.row.data.patientId)" class="button is-link" :class="{'is-loading':updating}">Cambiar estatus</a></b-table-column>
+            </template>
+            <template slot="empty">
+                <section class="section">
+                    <div class="content has-text-grey has-text-centered">
+                        <p class="is-italic">El terapeuta no tiene usuarios referidos.</p>
+                    </div>
+                </section>
+            </template>
+        </b-table>
+        <div class="modal" :class="{'is-active': isModalVisible}">
+            <div class="modal-background" @click="clearModal"></div>
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">Actualizar número de sesiones planeadas</p>
+                    <button class="delete" aria-label="close" @click="clearModal"></button>
+                </header>
+                <section class="modal-card-body">
+                    <div class="field">
+                        <label class="label">Sesiones esperadas</label>
+                        <div class="control">
+                            <input type="number" class="input" v-model="newValue" min="1">
+                        </div>
+                    </div>
+                </section>
+                <footer class="modal-card-foot">
+                    <button class="button is-success" @click="updateExpected" :class="{'is-loading': loading}">Actualizar</button>
+                    <button class="button" @click="clearModal">Cerrar</button>
+                </footer>
+            </div>
+        </div>
+        <div class="modal" :class="{'is-active': isStatusModal}">
+            <div class="modal-background" @click="clearStatusModal"></div>
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">Dar de alta o baja al usuario</p>
+                    <button class="delete" aria-label="close" @click="clearStatusModal"></button>
+                </header>
+                <section class="modal-card-body">
+                    <div class="field">
+                        <label class="label">Nuevo estatus</label>
+                        <div class="control">
+                            <div class="select">
+                                <select v-model="newStatus">
+                                    <option v-for="status in statuses" :key="status" :value="status">{{status}}</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label">Comentarios</label>
+                        <div class="control">
+                            <textarea v-model="statusComments" placeholder="Comentarios" class="textarea"></textarea>
+                        </div>
+                    </div>
+                </section>
+                <footer class="modal-card-foot">
+                    <button class="button is-success" @click="updatePatientStatus" :class="{'is-loading': loading}">Actualizar</button>
+                    <button class="button" @click="clearStatusModal">Cerrar</button>
+                </footer>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script>
+import { mapState } from 'vuex';
+import Swal from 'sweetalert2';
+const fb = require('@/firebaseConfig.js');
+
+export default {
+    props: {
+        statuses: { type: Array, default: () => (['Alta', 'Baja']) },
+    },
+    data() {
+        return {
+            loading: true,
+            refers: [],
+            // update planed session number
+            updating:false,
+            isModalVisible: false,
+            selectedId: null,
+            newValue: null,
+            therapistId: this.$route.params.id,
+            therapist: null,
+            // update patient status
+            isStatusModal: false,
+            selectedPatientId: null,
+            newStatus: this.statuses[0],
+            statusComments: null,
+        }
+    },
+    computed: {
+        ...mapState([
+        'currentUser',
+        'userProfile',
+        ]),
+        fullName() {
+            if (!this.therapist) return null;
+            return `${this.therapist.name} ${this.therapist.lastName}`;
+        }
+    },
+    methods: {
+        getMyRefs() {
+            this.loading = true;
+            this.refers = [];
+            fb.refersCollection.where('therapistId', '==', this.therapistId).get()
+            .then((querySnapshot) => {
+                querySnapshot.forEach(doc=> {
+                    this.refers.push({ id: doc.id,  data: doc.data() });
+                });
+            })
+            .catch(function(error) {
+                console.log("Error getting documents: ", error);
+            })
+            .finally(this.loading=false);
+        },
+        regSessions(sessions) {
+            if(!sessions) return 0;
+            return Object.keys(sessions).length;
+        },
+        showModal(id) {
+            this.isModalVisible = true;
+            this.selectedId = id;
+        },
+        clearModal() {
+            this.isModalVisible = false;
+            this.selectedId = null;
+        },
+        updateExpected() {
+            this.loading = true;
+            fb.refersCollection.doc(this.selectedId).update({
+                expectedAppts: this.newValue
+            })
+            .then(() => {
+                this.getMyRefs();
+                this.clearModal();
+            })
+            .catch(err =>{
+                Swal.fire({
+                   title: 'Ocurrió un error',
+                   text: err,
+                   type: "error",
+                   confirmButtonText: 'Aceptar' 
+                });
+            })
+            .finally(()=>this.loading=false);
+        },
+        getTherapist() {
+            fb.usersCollection.doc(this.therapistId).get()
+            .then(res => this.therapist = res.data())
+            .catch(function(error) {
+                console.log("Error getting documents: ", error);
+            })
+            .finally(this.loading=false);
+        },
+        showStatusModal(refId, patientId) {
+            this.selectedId = refId;
+            this.selectedPatientId = patientId;
+            this.isStatusModal = true;
+        },
+        clearStatusModal() {
+            this.selectedId = null;
+            this.selectedPatientId = null;
+            this.isStatusModal = false;
+        },
+        updatePatientStatus() {
+            this.loading = true;
+            const timestamp = Date.now().toString();
+            let statusObject = {
+                status: this.newStatus,
+                statusHistory: {},
+            };
+            statusObject.statusHistory[timestamp] = {
+                changerId: this.currentUser.uid,
+                comments: this.statusComments,
+            };
+            fb.patientsCollection.doc(this.selectedPatientId).update(statusObject)
+            .then(() => {
+                return fb.refersCollection.doc(this.selectedId).update({status: 'Terminado'})
+            })
+            .then(() => {
+                return fb.usersCollection.doc(this.therapistId).update({activePatients: fb.firebase.firestore.FieldValue.increment(-1)})
+            })
+            .then(() => {
+                this.getMyRefs();
+                this.clearStatusModal();
+            })
+            .catch(err =>{
+                Swal.fire({
+                   title: 'Ocurrió un error',
+                   text: err,
+                   type: "error",
+                   confirmButtonText: 'Aceptar' 
+                });
+            })
+            .finally(()=>this.loading=false);
+        },
+    },
+    mounted() {
+        // let uid = '';
+        if (this.therapistId) {
+            // uid = this.therapistId;
+            this.getTherapist();
+        } else { 
+            this.therapistId = this.currentUser.uid;
+        }
+        this.getMyRefs();
+    }
+}
+</script>

@@ -1,10 +1,11 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-const fb = require('./firebaseConfig.js')
+// const fb = require('./firebaseConfig.js')
+import { auth, usersCollection, db } from '@/firebaseConfig.js';
 
 Vue.use(Vuex)
 
-fb.auth.onAuthStateChanged(user => {
+auth.onAuthStateChanged(user => {
   if (user) {
     store.commit('setCurrentUser', user)
     store.dispatch('fetchUserProfile')
@@ -14,7 +15,10 @@ fb.auth.onAuthStateChanged(user => {
 export const store =  new Vuex.Store({
   state: {
     currentUser: null,
-    userProfile: {}
+    userProfile: {},
+    db,
+    patients: [],
+    // patientsIds: [],
   },
   mutations: {
     setCurrentUser(state, val) {
@@ -23,6 +27,14 @@ export const store =  new Vuex.Store({
     setUserProfile(state, val) {
         state.userProfile = val
     },
+    SET_PATIENTS (state, { patient }) {
+      const data = patient.data();
+      state.patients = [
+        ...state.patients,
+        {id: patient.id, data}
+      ]
+      // state.patientsIds.push(patient.id);
+    }
   },
   actions: {
     clearData({ commit }) {
@@ -30,10 +42,16 @@ export const store =  new Vuex.Store({
       commit('setUserProfile', {})
     },
     fetchUserProfile({ commit, state }) {
-      fb.usersCollection.doc(state.currentUser.uid).get().then(res=>{
+      usersCollection.doc(state.currentUser.uid).get()
+      .then(res=>{
         commit('setUserProfile', res.data())
       })
       .catch(err=>{console.log(err)})
+    },
+    async getPatients({ commit, state }) {
+      let patientsRef = state.db.collection('patients');
+      let patients = await patientsRef.get();
+      patients.forEach(patient => commit('SET_PATIENTS', { patient }))
     }
   }
 })

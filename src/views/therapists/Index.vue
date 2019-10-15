@@ -4,16 +4,17 @@
         <router-link to="/terapeutas/registrar-terapeuta" class="button is-success">Registrar nuevo terapeuta invitado</router-link>
         <br>
         <br>
+        <!-- TODO filters -->
         <b-table :data="therapists" :loading="gettingTherapists" >
             <template slot-scope="props">
                 <b-table-column field="data.name" label="Nombre" sortable>{{ props.row.data.name }}</b-table-column>
                 <b-table-column field="data.lastName" label="Apellido paterno" sortable>{{ props.row.data.lastName }}</b-table-column>
                 <b-table-column field="data.mothersName" label="Apellido materno" sortable>{{ props.row.data.mothersName }}</b-table-column>
                 <b-table-column field="id" label="Datos del terapeuta" >
-                    <router-link :to="'/terapeutas/' +  props.row.id" class="button">Ver/Editar</router-link>
+                    <router-link :to="'/terapeutas/' +  props.row.id" class="button">Ver</router-link>
                 </b-table-column>
-                <b-table-column field="id" label="Pacientes referidos" >
-                    <router-link :to="'/terapeutas/' +  props.row.id + '/pacientes-referidos'" class="button">Ir</router-link>
+                <b-table-column field="id" label="Usuarios referidos" >
+                    <router-link :to="'/terapeutas/' +  props.row.id + '/usuarios-referidos'" class="button">Ir</router-link>
                 </b-table-column>
             </template>
         </b-table>

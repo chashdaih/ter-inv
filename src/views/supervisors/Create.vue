@@ -1,12 +1,12 @@
 <template>
-    <div class="signup">
+    <div class="create-supervisor">
         <!-- <b-notification :active.sync="errorsExist" type="is-danger" aria-close-label="Close notification" >
             {{  }}
         </b-notification> -->
         <nav class="breadcrumb">
             <ul>
-                <li><a href="#">Inicio</a></li>
-                <li><a href="#">Supervisores y estudiantes</a></li>
+                <li><router-link to="/usuarios">Inicio</router-link>
+                <li><router-link to="/supervisores">Supervisores y estudiantes</router-link>
                 <li v-if="!supervisorId" class="is-active"><a href="#" aria-current="page">Registrar nuevo supervisor o estudiante</a></li>
                 <li v-else class="is-active"><a href="#" aria-current="page">Editar {{ supervisor.userType == 2 ? 'Supervisor':'Estudiante' }}</a></li>
             </ul>
@@ -63,14 +63,20 @@
                 <div class="control">
                     <div class="select">
                     <select v-model="supervisor.userType">
-                        <option value=2>Supervisor</option>
-                        <option value=1>Estudiante</option>
+                        <option v-for="option in userTypes" :key="option.value" :value="option.value">{{option.text}}</option>
                     </select>
                     </div>
                 </div>
             </div>
-            <button v-if="!supervisorId" class="button is-info"  @click.prevent="signup" :loading="performingRequest">Registrar</button>
-            <button v-else class="button is-info"  @click.prevent="update" :loading="performingRequest">Actualizar</button>
+            <button v-if="!supervisorId" class="button is-info"  @click.prevent="createSupervisor" :loading="performingRequest">Registrar</button>
+            <div v-else class="field is-grouped">
+                <div class="control">
+                    <button class="button is-info"  @click.prevent="update" :loading="performingRequest">Actualizar</button>
+                </div>
+                <div class="control">
+                    <toggle-status :uid="supervisorId" :disabled="supervisor.disabled" v-on:status-changed="onStatusChange"></toggle-status>
+                </div>
+            </div>
         </form>
     </div>
 </template>
@@ -79,23 +85,33 @@
 const fb = require('@/firebaseConfig.js')
 import Swal from 'sweetalert2';
 
+import ToggleStatus from '@/components/ToggleStatus.vue';
+
+import { supervisor } from '@/models.js';
+
 export default {
+    components: { ToggleStatus, },
+    props: {
+        userTypes: { type: Array, default: () => ([{ text: 'Supervisor', value: 2 }, { text: 'Estudiante', value: 1 }])},
+    },
     data() {
         return {
             supervisorId: null,
             existingSup: null,
+            authData: null,
             userData:{
                 email: '',
                 password: '',
                 confirmation: '',
             },
-            supervisor: {
-                name: '',
-                lastName: '',
-                mothersName: '',
-                userType: 2,
-                accountNum: ''
-            },
+            // supervisor: {
+            //     name: '',
+            //     lastName: '',
+            //     mothersName: '',
+            //     userType: 2,
+            //     accountNum: ''
+            // },
+            supervisor,
             performingRequest: false,
             fbErrors: {},
             errorsExist: false
@@ -109,10 +125,12 @@ export default {
             })
             .catch(err=>console.log(err))
         },
-        signup() {
+        createSupervisor() {
             this.performingRequest = true;
-            fb.auth.createUserWithEmailAndPassword(this.userData.email, this.userData.password).then(res => {
-                return fb.usersCollection.doc(res.user.uid).set(this.supervisor)
+            const createUser = fb.firebase.functions().httpsCallable('createNewUser');
+            createUser({email:this.userData.email, password: this.userData.password})
+            .then(res => {
+                return fb.usersCollection.doc(res.data.uid).set(this.supervisor)
             })
             .then(()=>{
                 Swal.fire({
@@ -154,6 +172,9 @@ export default {
                 });
             })
             .finally(()=>this.performingRequest=false)
+        },
+        onStatusChange(data) {
+            this.supervisor.disabled = data;
         }
     },
     mounted() {

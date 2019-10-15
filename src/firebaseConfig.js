@@ -4,12 +4,11 @@ import firebase from "firebase/app";
 // Add the Firebase products that you want to use
 import "firebase/auth";
 import "firebase/firestore";
-
-require('dotenv').config();
+import "firebase/functions";
 
 // firebase init goes here
 const config = {
-	apiKey: process.env.API_KEY,
+	apiKey: process.env.VUE_APP_API_KEY,
     authDomain: "terinv-9ed4b.firebaseapp.com",
     databaseURL: "https://terinv-9ed4b.firebaseio.com",
     projectId: "terinv-9ed4b",
@@ -25,9 +24,9 @@ const auth = firebase.auth()
 const currentUser = auth.currentUser
 
 // firebase collections
-const usersCollection = db.collection('users') // supervisores, estudiantes y terapeutas invitados
-const patientsCollection = db.collection('patients')
-// const therapistsCollection = db.collection('therapists')
+const usersCollection = db.collection('users'); // supervisores, estudiantes y terapeutas invitados
+const patientsCollection = db.collection('patients');
+const refersCollection = db.collection('refers');
 
 export {
     firebase,
@@ -36,5 +35,5 @@ export {
     currentUser,
     usersCollection,
     patientsCollection,
-    // therapistsCollection,
+    refersCollection,
 }
