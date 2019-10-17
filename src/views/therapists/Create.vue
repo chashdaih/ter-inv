@@ -253,6 +253,9 @@ export default {
             fb.usersCollection.doc(this.therapistId).get()
             .then(res=>{
                 this.therapist = res.data();
+                if (!this.therapist.attentionType) {
+                    this.therapist.attentionType = {};
+                }
             })
             .catch(err=>console.log(err))
         },

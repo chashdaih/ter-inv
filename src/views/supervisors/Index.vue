@@ -4,6 +4,12 @@
         <router-link :to="{ name: 'signup' }" class="button is-success">Registrar supervisor</router-link>
         <br>
         <br>
+        <div class="field">
+            <label class="label">Filtrar por nombres</label>
+            <div class="control">
+                <input type="text" class="input" placeholder="Buscar" v-model="search" @keyup="getSupervisors(search)" />
+            </div>
+        </div>
         <b-table :data="supervisors" :loading="gettingSupervisors" >
             <template slot-scope="props">
                 <b-table-column field="data.name" label="Nombre" sortable>{{ props.row.data.name }}</b-table-column>
@@ -29,14 +35,16 @@ export default {
         return {
             gettingSupervisors: true,
             supervisors: [],
+            search: '',
         }
     },
     methods: {
         getSupervisors() {
             this.gettingSupervisors = true;
-            fb.usersCollection.where('userType', '<', 3).get()
-            .then(querySnapshot=>{
-                querySnapshot.forEach(doc=> {
+            fb.usersCollection.where('userType', '<', 3).where('keywords', 'array-contains', this.search.toLowerCase()).limit(10).get()
+            .then(docs=>{
+                this.supervisors = [];
+                docs.forEach(doc=> {
                     this.supervisors.push({ id: doc.id,  data: doc.data() });
                 });
             })

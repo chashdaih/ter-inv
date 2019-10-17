@@ -4,6 +4,12 @@
         <router-link to="/terapeutas/registrar-terapeuta" class="button is-success">Registrar nuevo terapeuta invitado</router-link>
         <br>
         <br>
+        <div class="field">
+            <label class="label">Filtrar por nombres</label>
+            <div class="control">
+                <input type="text" class="input" placeholder="Buscar" v-model="search" @keyup="getTherapists(search)" />
+            </div>
+        </div>
         <!-- TODO filters -->
         <b-table :data="therapists" :loading="gettingTherapists" >
             <template slot-scope="props">
@@ -30,14 +36,16 @@ export default {
         return {
             gettingTherapists: true,
             therapists: [],
+            search: '',
         }
     },
     methods: {
         getTherapists() {
             this.gettingTherapists = true;
-            fb.usersCollection.where('userType', '==', 3).get()
-            .then(querySnapshot=>{
-                querySnapshot.forEach(doc=> {
+            fb.usersCollection.where('userType', '==', 3).where('keywords', 'array-contains', this.search.toLowerCase()).limit(10).get()
+            .then(docs=>{
+                this.therapists = [];
+                docs.forEach(doc=> {
                     this.therapists.push({ id: doc.id,  data: doc.data() });
                 });
             })

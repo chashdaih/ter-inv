@@ -2,8 +2,9 @@
     <div class="migration" style="background-color: white;">
         <h1 class="title">Migrar</h1>
         <!-- <label v-if="therapists.length > 0" class="label">Se tienen</label> -->
-        <a @click.prevent="migrar" class="button" :class="{'is-loading': loading}">Migrar terapeutas</a>
-        <a @click.prevent="migrarPacientes" class="button" :class="{'is-loading': loading}">Migrar pacientes</a>
+        <!-- <a @click.prevent="migrar" class="button" :class="{'is-loading': loading}">Migrar terapeutas</a> -->
+        <!-- <a @click.prevent="migrarPacientes" class="button" :class="{'is-loading': loading}">Migrar pacientes</a> -->
+        <a @click.prevent="migrarRefers" class="button" :class="{'is-loading': loading}">Migrar referencias</a>
     </div>
 </template>
 
@@ -15,10 +16,13 @@ const fb = require('@/firebaseConfig.js');
 let therapists = [];
 let problems = [];
 let patients = [];
+let refers = [];
 
 const oldStatus = ['En proceso', 'alta', 'baja', 'referenciado', 'no contesta', 'no se presentó', 'na'];
 
 const newStatus = ['Referido', 'Alta', 'Baja', 'Referido', 'Referido', 'Referido', 'Referido'];
+
+const delay = ms => new Promise(res=> setTimeout(res, ms));
 
 export default {
     data() {
@@ -27,32 +31,43 @@ export default {
         }
     },
     methods: {
-        // fetchTherapists() {
-        //     axios.get('./ther.json')
-        //     .then(res=>{
-        //         therapists= res.data;
-        //     });
-        // },
-        // fetchProblems() {
-        //     let res = axios.get('./ther_symptoms.json')
-        //     .then(res =>
-        //         problems = res.data
-        //     );
-        // },
+        fetchTherapists() {
+            axios.get('./ther.json')
+            .then(res=>{
+                therapists= res.data;
+            });
+        },
+        fetchProblems() {
+            let res = axios.get('./ther_symptoms.json')
+            .then(res =>
+                problems = res.data
+            );
+        },
         fetchPatients() {
             axios.get('./patients.json')
             .then(res=> {
                 patients = res.data;
             });
         },
-        migrar() {
+        fetchRefers() {
+            axios.get('./refer.json')
+            .then(res => {
+                refers = res.data;
+            })
+        },
+        async migrar() {
             this.loading = true;
-            const terapeuta = therapists[0];
+
+            // therapists.forEach(terapeuta => {
+            for(let i = 0; i < therapists.length; i++) {
+
+            const terapeuta = therapists[i];
 
             const email = terapeuta.correo;
             const password = terapeuta.password;
+            const uid = terapeuta.id_usuario;
 
-            const newUser = { email, password };
+            const newUser = { email, password, uid };
 
             // partir el nombre
             const arrayName = terapeuta.terapeuta.split(" ");
@@ -113,60 +128,112 @@ export default {
 
             const therapist = { name, lastName, mothersName, phone1, officeAddress, officeHours, maxCap, activePatients, specs, target, orientation, degree, colPatients, refPatients, userType, symptoms, keywords };
 
-            const createUser = fb.firebase.functions().httpsCallable('createNewUser');
-            createUser(newUser)
-            .then(res => {
-                return fb.usersCollection.doc(res.data.uid).set(therapist)
-            })
-            .then(res=>console.log('bien'))
-            .catch(err=>console.error(err))
-            .finally(this.loading = false);
+            try {
+                let createUser = fb.firebase.functions().httpsCallable('createNewUser');
+                const res = await createUser(newUser);
+                console.log('usuario creado, ' + res.data.uid);
+                const newRecord = await fb.usersCollection.doc(res.data.uid).set(therapist);
+                console.log('ter creado');
+            } catch(e) {
+                console.error(e);
+            }
+            
+            console.log('se esperarán 5 seg');
+            await delay(5000);
+            
+            // .then(res => {
+                
+            // })
+            // .then(res=>console.log('pasaron 5s'))
+            // .catch(err=>console.error(err))
+            // .finally(this.loading = false);
 
+            
+            }
+            this.loading = false;
         },
-        migrarPacientes() {
-            const paciente = patients[0];
+        async migrarPacientes() {
+            this.loading = true;
+            for (let i = 9; i < patients.length; i++) {
+                const paciente = patients[i];
 
-            const name = paciente.nombre;
-            const lastName = paciente.a_paterno;
-            const mothersName = paciente.a_materno;
-            const birthdate = paciente.fecha_nac;
-            const phoneHome = paciente.tel_casa;
-            const phoneCell = paciente.tel_celular;
-            const phoneWork = paciente.tel_laboral;
-            const email = paciente.correo;
-            const isUnam = paciente.unam ? true: false;
-            const curp = paciente.id_CURP;
-            const estado = "";
-            const alcaldia = "";
-            const municipio = null;
-            const address = paciente.direccion;
-            const maritalStatus = paciente.estado_civ.split(' ').join('_');
-            const education = paciente.nivel_estudio.split(' ').join('_');
-            const occupation = paciente.ocupacion;
-            const callReason = "";
-            const attentionType = 0;
-            const askedAttention = 0;
-            const askedType = 0;
-            const reason = "";
-            const symptoms = {};
-            const mainProblem = paciente.problema;
-            const status = newStatus[paciente.estatus];
-            const registeredBy = "";
-            const createdAt = paciente.fecha;
-            const keywords = generateKeywords([name, lastName, mothersName]);
+                const name = paciente.nombre;
+                const lastName = paciente.a_paterno;
+                const mothersName = paciente.a_materno;
+                const birthdate = paciente.fecha_nac;
+                const phoneHome = paciente.tel_casa;
+                const phoneCell = paciente.tel_celular;
+                const phoneWork = paciente.tel_laboral;
+                const email = paciente.correo;
+                const isUnam = paciente.unam ? true: false;
+                const curp = paciente.id_CURP;
+                const estado = "";
+                const alcaldia = "";
+                const municipio = "";
+                const address = paciente.direccion;
+                let maritalStatus = '';
+                if (paciente.estado_civ) {
+                    maritalStatus = paciente.estado_civ.split(' ').join('_');
+                }
+                let education = '';
+                if (paciente.nivel_estudio) {
+                    const education = paciente.nivel_estudio.split(' ').join('_');
+                }
+                const occupation = paciente.ocupacion;
+                const callReason = "";
+                const attentionType = 0;
+                const askedAttention = 0;
+                const askedType = 0;
+                const reason = "";
+                const symptoms = {};
+                const mainProblem = paciente.problema;
+                const status = newStatus[paciente.estatus];
+                const registeredBy = "";
+                const createdAt = paciente.fecha;
+                const keywords = generateKeywords([name, lastName, mothersName]);
 
-            const patient = { name, lastName, mothersName, birthdate, phoneHome, phoneCell, phoneWork, email, isUnam, curp, estado, alcaldia, municipio, address, maritalStatus, education, occupation, callReason, attentionType, askedType, reason, symptoms, mainProblem, status, registeredBy, createdAt, keywords };
+                const patient = { name, lastName, mothersName, birthdate, phoneHome, phoneCell, phoneWork, email, isUnam, curp, estado, alcaldia, municipio, address, maritalStatus, education, occupation, callReason, attentionType, askedType, reason, symptoms, mainProblem, status, registeredBy, createdAt, keywords };
+                try {
+                    let res = await fb.patientsCollection.doc(paciente.id_paciente.toString()).set(patient)
+                    console.log('bien');
+                } catch (e) {
+                    console.error(e);
+                }
+            }
+            this.loading = false;
+        },
+        async migrarRefers() {
+            this.loading = true;
+            for (let i = 0; i < refers.length; i++) {
+                const ref = refers[i];
 
-            fb.patientsCollection.add(patient)
-            .then(res=>console.log(res))
-            .catch(err=>console.log(err));
+                const expectedAppts = ref.sesiones_plan;
+                const patientId = ref.id_paciente.toString();
+                const patientName = ref.patientName;
+                const referrerId = ref.id_responsable.toString();
+                const referrerName = ref.referrerName;
+                const status = ref.estado_ref ? 'Activo' : 'Terminado';
+                const therapistId = ref.id_terapeuta.toString();
+                const therapistName = ref.therapistName;
+                const timestamp = fb.firebase.firestore.Timestamp.fromDate(new Date(ref.fecha));
 
+                const refer = { expectedAppts, patientId, patientName, referrerId, referrerName, status, therapistId, therapistName, timestamp };
+
+                try {
+                    let res = await fb.refersCollection.add(refer);
+                    console.log('añadido', ref.id_referenciacion);
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+            this.loading = false;
         }
     },
     mounted() {
         // this.fetchTherapists();
         // this.fetchProblems();
-        this.fetchPatients();
+        // this.fetchPatients();
+        this.fetchRefers();
     }
 }
 </script>

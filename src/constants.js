@@ -1,6 +1,6 @@
-const attentionTypes = ['Orientación/Consejo breve', 'Evaluación', 'Intervención'];
-const maritalStatuses = ['Soltero', 'Casado', 'Unión libre', 'Viudo', 'Separado'];
-const educationLevels = ['No cuenta con escolaridad', 'Preescolar', 'Primaria', 'Secundaria', 'Preparatoria', 'Licenciatura', 'Posgrado'];
+const attentionTypes = ['Orientación/Consejo_breve', 'Evaluación', 'Intervención'];
+const maritalStatuses = ['Soltero', 'Casado', 'Unión_libre', 'Viudo', 'Separado'];
+const educationLevels = ['No_cuenta_con_escolaridad', 'Preescolar', 'Primaria', 'Secundaria', 'Preparatoria', 'Licenciatura', 'Posgrado'];
 const patientTypes = ['Niño', 'Adolescente', 'Adulto'];
 const askedAttentions = ['Individual', 'Pareja', 'Familiar'];
 const askedTypes = ['Cognitivo-conductual', 'Psicodinámica', 'Psicoanalista', 'Sistémica', 'Gestalt',];

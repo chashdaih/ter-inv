@@ -28,7 +28,8 @@
 </template>
 
 <script>
-const fb = require('@/firebaseConfig.js');
+// const fb = require('@/firebaseConfig.js');
+import { auth } from '@/firebaseConfig.js';
 
 export default {
     data() {
@@ -50,12 +51,14 @@ export default {
     },
     methods: {
         logout() {
-            fb.auth.signOut()
+            this.$store.state.unsubscribeFromPats();
+            auth.signOut()
             .then(() => {
                 this.$store.dispatch('clearData')
                 this.$router.push('/login')
             })
             .catch(err=>console.log(err))
+
         },
         toggleMenu() {
             this.isActive = !this.isActive;

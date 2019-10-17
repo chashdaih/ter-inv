@@ -1,13 +1,13 @@
 <template>
     <div v-if="patient" class="modal">
         <div class="modal-background" @click="closeModal"></div>
-        <div class="modal-card">
+        <div class="modal-card" style="width: 75%; height: 75%">
             <header class="modal-card-head">
                 <p class="modal-card-title">Referenciar al usuario {{fullName}}</p>
             </header>
             <section class="modal-card-body">
                 <p>La siguiente lista muestra los terapeutas que atienden los problemas indicados por el usuario.</p>
-                <p>El usuario vive en {{muni}}</p>
+                <!-- <p>El usuario vive en {{muni}}</p> -->
                 <br>
                 <a href="https://maps.google.com" class="button is-info" target="_blank">
                     <span>Google Maps</span>
@@ -25,13 +25,15 @@
                         <b-table-column field="data.name" label="Nombre" sortable>{{ props.row.data.name }}</b-table-column>
                         <b-table-column field="data.lastName" label="Apellido paterno" sortable>{{ props.row.data.lastName }}</b-table-column>
                         <b-table-column field="data.mothersName" label="Apellido materno" sortable>{{ props.row.data.mothersName }}</b-table-column>
-                        <b-table-column label="Alcaldía/Municipio" sortable>{{ props.row.data.estado == "CDMX" ? props.row.data.officeAlcaldia : props.row.data.officeMunicipio }}</b-table-column>
+                        <!-- <b-table-column label="Alcaldía/Municipio" sortable>{{ props.row.data.estado == "CDMX" ? props.row.data.officeAlcaldia : props.row.data.officeMunicipio }}</b-table-column> -->
                         <b-table-column label="Usuarios/Total">{{props.row.data.activePatients}}/{{props.row.data.maxCap}}</b-table-column>
+                        <b-table-column label="Teléfono">{{props.row.data.phone1}}<template v-if="props.row.data.phone2"> / {{props.row.data.phone2}}</template></b-table-column>
+                        <b-table-column label="Dirección">{{props.row.data.officeAddress}}</b-table-column>
                     </template>
-                    <template slot="empty">
+                    <template v-if="!gettingTherapists" slot="empty">
                         <section class="section">
                             <div class="content has-text-grey has-text-centered">
-                                <p class="has-text-weight-bold">No hay terapeutas que cumplan con los requerimentos del usuario :(</p>
+                                <p class="has-text-weight-bold">{{tableText}}</p>
                             </div>
                         </section>
                     </template>
@@ -65,7 +67,8 @@ export default {
             gettingTherapists: true,
             referencing: false,
             therapists: [],
-            selectedTherapist: null
+            selectedTherapist: null,
+            tableText: 'No hay terapeutas que cumplan con los requerimentos del usuario :(',
         }
     },
     computed: {
@@ -95,7 +98,7 @@ export default {
         closeModal() {
             this.$emit('close-refer-modal')
         },
-        getTherapists() {
+        async getTherapists() {
             this.gettingTherapists = true;
             this.therapists = [];
             let query = fb.usersCollection;
@@ -103,14 +106,23 @@ export default {
             query = query.where(`target.${this.patientType}`, '==', true) // que atiendan la edad del paciente
             query = query.where(`symptoms.${this.patient.data.mainProblem}`, '==', true);
             // todo where is not disabled
-            query.get()
-            .then(querySnapshot=>{
-                querySnapshot.forEach(doc=> {
-                    this.therapists.push({ id: doc.id,  data: doc.data() });
+            // todo pagination
+            try {
+                const docs = await query.get();
+                docs.forEach(doc => {
+                    const data = doc.data();
+                    if (data.maxCap > data.activePatients) {
+                        this.therapists.push({ id: doc.id,  data });
+                    }
                 });
-            })
-            .catch(err=>console.log(err)) // todo poner un banner de error
-            .finally(this.gettingTherapists = false);
+                this.gettingTherapists = false;
+            } catch (err) {
+                this.$buefy.toast.open({
+                    message: err,
+                    type: 'is-danger',
+                    position: 'is-bottom'
+                });
+            }
         },
         refer() {
             this.referencing = true;
@@ -153,7 +165,7 @@ export default {
                     type: "success",
                     confirmButtonText: 'Aceptar',
                     onClose: () => {
-                        this.$emit('reload-patients');
+                        // this.$emit('reload-patients');
                         this.closeModal();
                     }
                 });

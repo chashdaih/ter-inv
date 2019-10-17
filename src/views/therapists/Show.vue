@@ -8,7 +8,7 @@
             </ul>
         </nav>
         <h1 class="title">Datos del terapeuta invitado</h1>
-        <table v-if="therapist != null" class="table is-fullwidth is-hoverable is-striped">
+        <table v-if="therapist" class="table is-fullwidth is-hoverable is-striped">
             <tbody>
                 <tr><th>Nombre</th><td>{{fullName}}</td></tr>
                 <tr v-if="therapist.phone1 != ''"><th>Teléfono 1</th><td>{{therapist.phone1}}</td></tr>
@@ -34,7 +34,7 @@ const fb = require('@/firebaseConfig.js');
 export default {
     data() {
         return {
-            therId: null,
+            therId: this.$route.params.id,
             therapist: null,
         }
     },
@@ -80,6 +80,7 @@ export default {
             return cat;
         },
         serviceType(){
+            if (!this.therapist.attentionType) return null;
             let ser = '';
             Object.keys(this.therapist.attentionType).map((key)=>{
                 if (this.therapist.attentionType[key]) {
@@ -93,7 +94,7 @@ export default {
         },
     },
     mounted() {
-        this.therId = this.$route.params.id;
+        // this.therId = this.$route.params.id;
         this.getTherapist();
     }
     

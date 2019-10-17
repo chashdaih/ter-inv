@@ -48,11 +48,11 @@
                 </tr>
                 <tr>
                     <th>Municipio y estado</th>
-                    <td>{{patient.municipio}}, {{patient.estado}}</td>
+                    <td>{{patient.municipio||patient.alcaldia}}, {{patient.estado}}</td>
                 </tr>
                 <tr>
                     <th>Estado civil</th>
-                    <td>{{maritalStatus}}</td>
+                    <td>{{patient.maritalStatus}}</td>
                 </tr>
                 <tr>
                     <th>Ocupación</th>
@@ -61,15 +61,15 @@
                 </template>
                 <tr>
                     <th>Modalidad de supervisión</th>
-                    <td>{{attentionType}}</td>
+                    <td>{{patient.attentionType}}</td>
                 </tr>
                 <tr>
                     <th>Tipo de servicio</th>
-                    <td>{{askedAttention}}</td>
+                    <td>{{patient.askedAttention}}</td>
                 </tr>
                 <tr>
                     <th>Orientación solicitada</th>
-                    <td>{{askedType}}</td>
+                    <td>{{patient.askedType}}</td>
                 </tr>
                 <tr>
                     <th>Motivo de la persona para solicitar atención</th>
@@ -88,28 +88,37 @@
 </template>
 
 <script>
-const fb = require('@/firebaseConfig.js');
+// const fb = require('@/firebaseConfig.js');
 import { maritalStatuses, attentionTypes, askedAttentions, askedTypes } from '@/constants.js';
+import { mapActions } from 'vuex';
 
 export default {
+    props: {
+        // patientId: { type: Number, default: this.$route.params.id, },
+    },
     data() {
         return {
-            patientId: null,
-            patient: null,
+            patientId: this.$route.params.id,
+            // patient: null,
         }
     },
     methods: {
-        getPatient() {
-            fb.patientsCollection.doc(this.patientId).get()
-            .then(res=>{
-                this.patient = res.data();
-            })
-            .catch(err=>console.log(err))
-        },
+        // getPatient() {
+        //     fb.patientsCollection.doc(this.patientId).get()
+        //     .then(res=>{
+        //         this.patient = res.data();
+        //     })
+        //     .catch(err=>console.log(err))
+        // },
+        ...mapActions(['getSelectedPatient']),
     },
     computed: {
+        patient() {
+            if (!this.$store.state.selectedPatient) return null;
+            return this.$store.state.selectedPatient.data 
+        },
         fullName: function () {
-            if (!this.patient) return null;
+            // if (!this.patient) return null;
             return this.patient.name + " " + this.patient.lastName + " " + this.patient.mothersName
         },
         age() {
@@ -120,9 +129,6 @@ export default {
         },
         userProfile() {
             return this.$store.state.userProfile;
-        },
-        maritalStatus() {
-            return maritalStatuses[this.patient.maritalStatus];
         },
         catalog() {
             let cat = '';
@@ -145,11 +151,12 @@ export default {
             return askedAttentions[this.patient.askedAttention]
         },
         attentionType: function () { return attentionTypes[this.patient.attentionType] },
-        askedType() { return askedTypes[this.patient.askedType]; }
+        askedType() { return askedTypes[this.patient.askedType]; },
     },
     mounted() {
-        this.patientId = this.$route.params.id;
-        this.getPatient();
+        // this.patientId = this.$route.params.id;
+        // this.getPatient();
+        this.getSelectedPatient(this.patientId);
     }
 }
 </script>

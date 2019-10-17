@@ -8,8 +8,8 @@ admin.initializeApp();
 let mailTransport = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-        user: 'chashdaih@gmail.com',
-        pass: 'ContraNueva1g',
+        user: 'terapeuta.invitado@gmail.com',
+        pass: 'Tera inv',
     },
 });
 
@@ -65,8 +65,9 @@ exports.createNewUser = functions.https.onCall(data => {
 
     const email = data.email;
     const password = data.password
+    const uid = data.uid;
 
-    return admin.auth().createUser({email, password})
+    return admin.auth().createUser({email, password, uid})
     .then(user => {
         return {uid: user.uid};
     })
@@ -75,3 +76,15 @@ exports.createNewUser = functions.https.onCall(data => {
     });
     
 });
+
+exports.deleteUser = functions.https.onCall(async data => {
+    const uid = data.uid;
+
+    try {
+        await admin.auth().deleteUser(uid);
+        return {ok:200}
+    } catch (error) {
+        throw new functions.https.HttpsError(error);
+    }
+
+})

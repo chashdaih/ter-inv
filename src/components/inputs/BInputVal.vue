@@ -1,6 +1,7 @@
 <template>
     <ValidationProvider
         :vid="vid"
+        mode="eager"
         :name="$attrs.name || $attrs.label"
         :rules="rules"
         v-slot="{ errors, valid }"
@@ -28,7 +29,7 @@ export default {
             type: [Object, String],
             default: ""
         },
-        // must be incluuded in props
+        // must be included in props
         value: {
             type: null
         }

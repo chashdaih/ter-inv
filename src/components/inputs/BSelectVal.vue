@@ -1,11 +1,11 @@
 <template>
-    <ValidationProvider :vid="vid" :name="$attrs.label" :rules="rules" v-slot="{ errors, valid }">
+    <ValidationProvider :vid="vid" :name="$attrs.label" :rules="rules" v-slot="{ errors, valid }" >
         <b-field
             v-bind="$attrs"
             :type="{ 'is-danger': errors[0], 'is-success': valid }"
             :message="errors"
         >
-            <b-select v-model="innerValue">
+            <b-select v-model="innerValue" @input="$emit('change')">
                 <slot/>
             </b-select>
         </b-field>

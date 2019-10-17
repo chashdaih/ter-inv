@@ -4,12 +4,12 @@
         <router-link :to="{ name:'registerPatient' }" class="button is-success">Registrar nuevo usuario</router-link>
         <br>
         <br>
-        <!-- <div class="field">
+        <div class="field">
             <label class="label">Filtrar por nombres</label>
             <div class="control">
-                <input type="text" class="input" placeholder="Buscar" v-model="search" @keyup="searchByName" />
+                <input type="text" class="input" placeholder="Buscar" v-model="search" @keyup="getPatients(search)" />
             </div>
-        </div> -->
+        </div>
         <b-table :data="patients" :loading="isSearching">
             <template slot-scope="props">
                 <b-table-column field="name" sortable label="Nombre" >{{props.row.data.name}}</b-table-column>
@@ -28,51 +28,39 @@
                 </b-table-column>
             </template>
         </b-table>
-        <!-- <a @click.prevent="searchByName" class="button">Cargar más</a> -->
-        <!-- <refer-modal 
+        <refer-modal 
             :class="{ 'is-active': isModalVisible }" 
             :patient="selectedPatient" 
-            @close-refer-modal="clearModal"
-            @reload-patients="searchByName"    
-        ></refer-modal> -->
+            @close-refer-modal="clearModal" 
+        ></refer-modal>
     </div>
 </template>
 
 <script>
-// const fb = require('@/firebaseConfig.js');
-
 import { mapState, mapActions } from 'vuex';
-
 import ReferModal from '@/components/ReferModal.vue';
-
-const limit = 2;
-let lastDoc = null;
 
 export default {
     components: { ReferModal, },
     data() {
         return {
             isModalVisible: false,
-            // patients: [],
             selectedPatient: null,
-            search: '',
-            isUnam: false,
             isSearching: false,
         }
     },
     computed: {
         ...mapState(['patients']),
+        search: {
+            set(val) {
+                this.$store.commit('SET_PAT_SEARCH', val);
+            },
+            get() {
+                return this.$store.state.patSearch;
+            }
+        }
     },
     methods: {
-        // getPatients() {
-        //     fb.patientsCollection.get()
-        //     .then(querySnapshot=>{
-        //         querySnapshot.forEach(doc=> {
-        //             this.patients.push({ id: doc.id,  data: doc.data() });
-        //         });
-        //     })
-        //     .catch(err=>console.log(err))
-        // },
         showModal(patient) {
             this.selectedPatient = patient;
             this.isModalVisible = true;
@@ -81,34 +69,11 @@ export default {
             this.isModalVisible=false;
             this.selectedPatient = null;
         },
-        // searchByName() {
-        //     this.isSearching = true;
-        //     // console.log(lastDoc);
-        //     fb.patientsCollection.where('keywords', 'array-contains', this.search.toLowerCase()).orderBy('name').startAfter(lastDoc).limit(limit).get()
-        //     .then(snapshot => {
-        //         let newPats = []
-        //         // lastDoc = snapshot.docs[snapshot.docs.length -1];
-        //         snapshot.forEach(patient => {
-        //             newPats.push({
-        //             // this.patients.push({
-        //                 id: patient.id,
-        //                 data: patient.data(),
-        //             });
-        //         });
-        //         this.patients = newPats;
-        //     })
-        //     .catch(err => console.log(err))
-        //     .finally(this.isSearching = false);
-        // }
         ...mapActions(['getPatients']),
     },
     mounted() {
-        // this.searchByName();
         if (this.patients.length === 0) {
-            console.log("se llamará servicio")
-            this.getPatients();
-        } else {
-            console.log('ya existe valor');
+            this.getPatients('');
         }
     }
 }

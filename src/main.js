@@ -35,7 +35,7 @@ Vue.use(Buefy, {
   }
 });
 
-import "./vee-validate";
+import "./vee-validate.js";
 
 const fb = require('./firebaseConfig.js')
 

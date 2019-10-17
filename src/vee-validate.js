@@ -1,22 +1,13 @@
-import { required, confirmed, length, email } from "vee-validate/dist/rules";
-import { extend } from "vee-validate";
+import { required, confirmed, min, email } from "vee-validate/dist/rules";
+import { extend, localize } from "vee-validate";
+import es from 'vee-validate/dist/locale/es.json';
 
-extend("required", {
-  ...required,
-  message: "This field is required"
-});
+extend("required", required);
 
-extend("email", {
-  ...email,
-  message: "This field must be a valid email"
-});
+extend("email", email);
 
-extend("confirmed", {
-  ...confirmed,
-  message: "This field confirmation does not match"
-});
+extend("confirmed", confirmed);
 
-extend("length", {
-  ...length,
-  message: "This field must have 2 options"
-});
+extend("min", min);
+
+localize('es', es);

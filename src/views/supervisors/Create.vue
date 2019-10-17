@@ -1,8 +1,5 @@
 <template>
     <div class="create-supervisor">
-        <!-- <b-notification :active.sync="errorsExist" type="is-danger" aria-close-label="Close notification" >
-            {{  }}
-        </b-notification> -->
         <nav class="breadcrumb">
             <ul>
                 <li><router-link to="/usuarios">Inicio</router-link>
@@ -13,90 +10,58 @@
         </nav>
         <h1 v-if="!supervisorId" class="title">Registrar nuevo supervisor o estudiante</h1>
         <h1 v-else class="title">Editar {{ supervisor.userType == 2 ? 'Supervisor':'Estudiante' }}</h1>
-        <form class="form">
-            <div v-if="!supervisorId">
-            <div class="field">
-                <label class="label">Correo electrónico</label>
-                <div class="control">
-                    <input v-model="userData.email" class="input" type="email" placeholder="Correo electrónico">
-                </div>
-            </div>
-            <div class="field">
-                <label class="label">Contraseña</label>
-                <div class="control">
-                    <input v-model="userData.password" class="input" type="password" placeholder="Contraseña">
-                </div>
-            </div>
-            <div class="field">
-                <label class="label">Confirmar contraseña</label>
-                <div class="control">
-                    <input v-model="userData.confirmation" class="input" type="password" placeholder="Confirmar contraseña">
-                </div>
-            </div>
-            </div>
-            <div class="field">
-                <label class="label">Nombre</label>
-                <div class="control">
-                    <input v-model="supervisor.name" class="input" type="text" placeholder="Nombre">
-                </div>
-            </div>
-            <div class="field">
-                <label class="label">Apellido paterno</label>
-                <div class="control">
-                    <input v-model="supervisor.lastName" class="input" type="text" placeholder="Apellido paterno">
-                </div>
-            </div>
-            <div class="field">
-                <label class="label">Apellido materno</label>
-                <div class="control">
-                    <input v-model="supervisor.mothersName" class="input" type="text" placeholder="Apellido materno">
-                </div>
-            </div>
-            <div class="field">
-                <label class="label">Número de cuenta o número de trabajador o curp</label>
-                <div class="control">
-                    <input v-model="supervisor.accountNum" class="input" type="text" placeholder="Número de cuenta o número de trabajador o curp">
-                </div>
-            </div>
-            <div class="field">
-                <label class="label">Tipo de usuario</label>
-                <div class="control">
-                    <div class="select">
-                    <select v-model="supervisor.userType">
-                        <option v-for="option in userTypes" :key="option.value" :value="option.value">{{option.text}}</option>
-                    </select>
+        <form>
+            <ValidationObserver ref="observer" v-slot="{ passes }">
+                <template v-if="!supervisorId">
+                    <BInputVal rules="required|email" type="email" label="Correo electrónico" v-model="userData.email" placeholder="Correo" />
+                    <BInputVal rules="required|min:6" type="password" vid="contraseña" label="Contraseña" v-model="userData.password" placeholder="Contraseña" />
+                    <BInputVal rules="required|confirmed:contraseña" type="password" label="Confirmar contraseña" v-model="userData.confirmation" placeholder="Confirmar contraseña" />
+                </template>
+                <BInputVal rules="required" type="text" label="Nombre" v-model="supervisor.name" placeholder="Nombre" />
+                <BInputVal rules="required" type="text" label="Apellido paterno" v-model="supervisor.lastName" placeholder="Apellido paterno" />
+                <BInputVal rules="required" type="text" label="Apellido materno" v-model="supervisor.mothersName" placeholder="Apellido materno" />
+                <BInputVal rules="required" type="text" label="Número de cuenta o número de trabajador o curp" v-model="supervisor.accountNum" placeholder="Número de cuenta o número de trabajador o curp" />
+                <BSelectVal rules="required" label="Tipo de usuario" v-model="supervisor.userType">
+                    <option v-for="option in userTypes" :key="option.value" :value="option.value">{{option.text}}</option>
+                </BSelectVal>
+                <button v-if="!supervisorId" class="button is-info" type="submit" @click.prevent="passes(createSupervisor)" :class="{'is-loading': performingRequest}">Registrar</button>
+                <div v-else class="field is-grouped">
+                    <div class="control">
+                        <button class="button is-info"  @click.prevent="passes(update)" :class="{'is-loading': performingRequest}">Actualizar</button>
+                    </div>
+                    <div class="control">
+                        <toggle-status :uid="supervisorId" :disabled="supervisor.disabled" v-on:status-changed="onStatusChange"></toggle-status>
+                    </div>
+                    <div v-if="currentUser.uid=='s8R9yKP5uJQRNwp1MT8f1PfzPKr1'" class="control">
+                        <button class="button is-danger" type="button" @click.prevent="showDel">Borrar supervisor</button>
                     </div>
                 </div>
-            </div>
-            <button v-if="!supervisorId" class="button is-info"  @click.prevent="createSupervisor" :loading="performingRequest">Registrar</button>
-            <div v-else class="field is-grouped">
-                <div class="control">
-                    <button class="button is-info"  @click.prevent="update" :loading="performingRequest">Actualizar</button>
-                </div>
-                <div class="control">
-                    <toggle-status :uid="supervisorId" :disabled="supervisor.disabled" v-on:status-changed="onStatusChange"></toggle-status>
-                </div>
-            </div>
+            </ValidationObserver>
         </form>
     </div>
 </template>
 
 <script>
-const fb = require('@/firebaseConfig.js')
+import { firebase, usersCollection } from '@/firebaseConfig.js';
 import Swal from 'sweetalert2';
+import { mapState } from 'vuex';
 
+import { ValidationObserver } from 'vee-validate';
+import BInputVal from '@/components/inputs/BInputVal.vue';
+import BSelectVal from '@/components/inputs/BSelectVal.vue';
 import ToggleStatus from '@/components/ToggleStatus.vue';
 
 import { supervisor } from '@/models.js';
+import { generateKeywords } from '@/utils.js';
 
 export default {
-    components: { ToggleStatus, },
+    components: { ToggleStatus, ValidationObserver, BSelectVal, BInputVal },
     props: {
         userTypes: { type: Array, default: () => ([{ text: 'Supervisor', value: 2 }, { text: 'Estudiante', value: 1 }])},
     },
     data() {
         return {
-            supervisorId: null,
+            supervisorId: this.$route.params.id,
             existingSup: null,
             authData: null,
             userData:{
@@ -114,12 +79,16 @@ export default {
             supervisor,
             performingRequest: false,
             fbErrors: {},
-            errorsExist: false
+            errorsExist: false,
+            isDel: false,
         }
+    },
+    computed: {
+        ...mapState(['currentUser']),
     },
     methods: {
         getSupervisor() { // todo get from vuex
-            fb.usersCollection.doc(this.supervisorId).get()
+            usersCollection.doc(this.supervisorId).get()
             .then(res=>{
                 this.supervisor = res.data();
             })
@@ -127,10 +96,14 @@ export default {
         },
         createSupervisor() {
             this.performingRequest = true;
-            const createUser = fb.firebase.functions().httpsCallable('createNewUser');
+            const createUser = firebase.functions().httpsCallable('createNewUser');
             createUser({email:this.userData.email, password: this.userData.password})
             .then(res => {
-                return fb.usersCollection.doc(res.data.uid).set(this.supervisor)
+                let newSupervisor = this.supervisor;
+                newSupervisor.registeredBy = this.$store.state.currentUser.uid;
+                newSupervisor.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+                newSupervisor.keywords = generateKeywords([this.supervisor.name, this.supervisor.lastName, this.supervisor.mothersName]);
+                return usersCollection.doc(res.data.uid).set(newSupervisor)
             })
             .then(()=>{
                 Swal.fire({
@@ -153,7 +126,7 @@ export default {
         },
         update() {
             this.performingRequest = true;
-            fb.usersCollection.doc(this.supervisorId).update(this.supervisor)
+            usersCollection.doc(this.supervisorId).update(this.supervisor)
             .then(()=>{
                 Swal.fire({
                     title: 'Éxito',
@@ -175,10 +148,13 @@ export default {
         },
         onStatusChange(data) {
             this.supervisor.disabled = data;
+        },
+        showDel() {
+            this.isDel = true;
         }
     },
     mounted() {
-        this.supervisorId = this.$route.params.id;
+        // this.supervisorId = this.$route.params.id;
         if (this.supervisorId) {
             this.getSupervisor();
         }

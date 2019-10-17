@@ -1,8 +1,8 @@
 <template>
     <div class="signup">
-        <b-notification :active.sync="errorsExist" type="is-danger" aria-close-label="Close notification" >
+        <!-- <b-notification :active.sync="errorsExist" type="is-danger" aria-close-label="Close notification" >
             {{ fbErrors.message }}
-        </b-notification>
+        </b-notification> -->
         <nav class="breadcrumb">
             <ul>
                 <li><router-link to="/">Inicio</router-link></li>
@@ -13,126 +13,118 @@
         </nav>
         <h1 v-if="!patientId" class="title">Registrar nuevo usuario</h1>
         <h1 v-else class="title">Actualizar usuario</h1>
-        <!-- <div class="card">
-            <div class="card-header" style="background-color: #E4AE33;">
-                <p class="card-header-title">Registrar nuevo paciente</p>
-            </div>
-            <div class="card-content">
-                <div class="content"> -->
-                    <!-- <ValidationObserver ref="observer" v-slot="{ passes }"> -->
-                        <BInputVal rules="required" type="text" label="Nombre" v-model="patient.name" placeholder="Nombre" />
-                        <BInputVal rules="required" type="text" label="Apellido paterno" v-model="patient.lastName" placeholder="Apellido paterno" />
-                        <BInputVal rules="required" type="text" label="Apellido materno" v-model="patient.mothersName" placeholder="Apellido materno" />
-                        <BInputVal rules="required" type="date" label="Fecha de nacimiento" v-model="patient.birthdate" placeholder="Fecha de nacimiento" />
-                        <BInputVal rules="" type="text" label="Teléfono casa" v-model="patient.phoneHome" placeholder="Teléfono casa (opcional)" />
-                        <BInputVal rules="" type="text" label="Teléfono celular" v-model="patient.phoneCell" placeholder="Teléfono celular (opcional)" />
-                        <BInputVal rules="" type="text" label="Teléfono trabajo" v-model="patient.phoneWork" placeholder="Teléfono trabajo (opcional)" />
-                        <BInputVal rules="email" type="email" label="Correo electrónico" v-model="patient.email" placeholder="Correo (opcional)" />
-                        <BSelectVal rules="required" label="¿Pertenece a la UNAM?" v-model="patient.isUnam">
-                            <option value=false>No</option>
-                            <option value=true>Si</option>
-                        </BSelectVal>
-                        <BInputVal rules="required" type="text" label="Número de cuenta/CURP/trabajador UNAM" v-model="patient.curp" placeholder="Número de cuenta/CURP/trabajador UNAM" />
-                        <a href="https://www.gob.mx/curp/" class="button is-info" target="_blank">
-                            <span>Ir a página para buscar el CURP</span>
-                            <span class="icon">
-                                <b-icon
-                                    pack="fas"
-                                    icon="external-link-alt"
-                                    size="is-small">
-                                </b-icon>
-                            </span>
-                        </a>
-                        <!-- <BInputVal rules="required" type="text" label="Estado" v-model="patient.estado" placeholder="Estado" />
-                        <BInputVal rules="required" type="text" label="Municipio" v-model="patient.municipio" placeholder="Municipio" /> -->
-                        <div class="field">
-                            <label class="label">Estado</label>
-                            <div class="control">
-                                <div class="select">
-                                    <select v-model="patient.estado" @change="changeAlMun">
-                                        <option value="CDMX">CDMX</option>
-                                        <option value="edoMex">Estado de México</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        <div v-if="patient.estado=='CDMX'" class="field">
-                            <label class="label">Alcaldía</label>
-                            <div class="control">
-                                <div class="select">
-                                    <select v-model="patient.alcaldia">
-                                        <option v-for="(al, idx) in alcaldias" :key="idx" :value="al">{{al}}</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        <div v-else class="field">
-                            <label class="label">Municipio</label>
-                            <div class="control">
-                                <div class="select">
-                                    <select v-model="patient.municipio">
-                                        <option v-for="(mun, idx) in municipios" :key="idx" :value="mun">{{mun}}</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="field">
-                            <label class="label">Dirección</label>
-                            <div class="control">
-                                <input type="text" class="input" placeholder="Dirección (opcional)" v-model="patient.address">
-                            </div>
-                        </div>
-                        <BSelectVal rules="required" label="Estado civil" v-model="patient.maritalStatus">
-                            <option v-for="(type, idx) in maritalStatuses" :key=idx :value="idx">{{ type }}</option>
-                        </BSelectVal>
-                        <BInputVal rules="required" type="text" label="Ocupación" v-model="patient.occupation" placeholder="Ocupación" />
-                        <!-- <BInputVal rules="required" type="text" label="Motivo de llamada" v-model="patient.callReason" placeholder="Motivo de llamada" /> -->
-                        <BSelectVal rules="required" label="Modalidad de supervisión" v-model="patient.attentionType">
-                            <option v-for="(type, idx) in attentionTypes" :key=idx :value="idx">{{ type }}</option>
-                        </BSelectVal>
-                        <BSelectVal rules="required" label="Tipo de servicio" v-model="patient.askedAttention">
-                            <option v-for="(type, idx) in askedAttentions" :key=idx :value="idx">{{ type }}</option>
-                        </BSelectVal>
-                        <!-- <BSelectVal rules="required" label="Tipo de paciente" v-model="patient.patientType">
-                            <option v-for="(type, idx) in patientTypes" :key=idx :value="idx">{{ type }}</option>
-                        </BSelectVal> -->
-                        <BSelectVal rules="required" label="Orientación solicitada" v-model="patient.askedType">
-                            <option v-for="(type, idx) in askedTypes" :key=idx :value="idx">{{ type }}</option>
-                        </BSelectVal>
-                        <!-- preconsulta -->
-                        <div class="field">
-                            <label class="label">Motivo de la persona para solicitar atención psicológica</label>
-                            <p class="is-italic">Describa la problemática o motivo por el cual solicita el programa de terapeuta invitado.</p>
-                            <div class="control">
-                                <textarea class="textarea" v-model="patient.reason" ></textarea>
-                            </div>
-                        </div>
-                        <div class="field">
-                            <label class="label">Síntoma principal</label>
-                            <div class="control">
-                                <div class="select">
-                                    <select v-model="patient.mainProblem">
-                                        <option v-for="symptom in symptomsList" :key="symptom" :value="symptom">{{symptom}}</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="field">
-                            <label class="label">Listado de criterios (Sintomatología detectada por el terapeuta)</label>
-                            <p class="is-italic">Seleccione sólo aquellas problemáticas que le estén afectando en la actualidad</p>
-                            <div class="control" v-for="(symptom,idx) in symptomsList" :key="idx">
-                                <label class="checkbox"><input type="checkbox" v-model="patient.symptoms[symptomsList[idx]]"> {{symptom}}</label>
-                            </div>
-                        </div>
-
-                        <!-- <b-button v-if="!patientId" type="is-info" @click="signup" :loading="performingRequest" >Registrar</b-button> -->
-                        <a v-if="!patientId" @click="signup" class="button is-info" :class="{'is-loading': performingRequest}">Registrar</a>
-                        <a v-else class="button is-info" :class="{'is-loading': performingRequest}" @click="update"> Actualizar</a>
-                    <!-- </ValidationObserver> -->
+        <ValidationObserver ref="observer" v-slot="{ passes }">
+            <form v-if="patient">
+                <BInputVal rules="required" type="text" label="Nombre" v-model="patient.name" placeholder="Nombre" />
+                <BInputVal rules="required" type="text" label="Apellido paterno" v-model="patient.lastName" placeholder="Apellido paterno" />
+                <BInputVal rules="required" type="text" label="Apellido materno" v-model="patient.mothersName" placeholder="Apellido materno" />
+                <BInputVal rules="required" type="date" label="Fecha de nacimiento" v-model="patient.birthdate" placeholder="Fecha de nacimiento" />
+                <div class="field">
+                    <label class="label">Teléfono de casa (opcional)</label>
+                    <div class="control">
+                        <input type="text" class="input" v-model="patient.phoneHome" placeholder="Teléfono casa (opcional)" >
+                    </div>
                 </div>
-            <!-- </div>
-        </div>
-    </div> -->
+                <div class="field">
+                    <label class="label">Teléfono celular (opcional)</label>
+                    <div class="control">
+                        <input type="text" class="input" v-model="patient.phoneCell" placeholder="Teléfono celular (opcional)" >
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">Teléfono de trabajo (opcional)</label>
+                    <div class="control">
+                        <input type="text" class="input" v-model="patient.phoneWork" placeholder="Teléfono trabajo (opcional)" >
+                    </div>
+                </div>
+                <BInputVal rules="email" type="email" label="Correo electrónico" v-model="patient.email" placeholder="Correo (opcional)" />
+                <BSelectVal rules="required" label="¿Pertenece a la UNAM?" v-model="patient.isUnam">
+                    <option value=false>No</option>
+                    <option value=true>Si</option>
+                </BSelectVal>
+                <BInputVal rules="required" type="text" label="Número de cuenta/CURP/trabajador UNAM" v-model="patient.curp" placeholder="Número de cuenta/CURP/trabajador UNAM" />
+                <a href="https://www.gob.mx/curp/" class="button is-info" target="_blank">
+                    <span>Ir a página para buscar el CURP</span>
+                    <span class="icon">
+                        <b-icon
+                            pack="fas"
+                            icon="external-link-alt"
+                            size="is-small">
+                        </b-icon>
+                    </span>
+                </a>
+                <BSelectVal rules="required" label="Estado" v-model="patient.estado" @change="changeAlMun">
+                    <option value="CDMX">CDMX</option>
+                    <option value="edoMex">Estado de México</option>
+                </BSelectVal>
+                <BSelectVal v-if="patient.estado=='CDMX'" rules="required" label="Alcaldía" v-model="patient.alcaldia">
+                    <option v-for="(al, idx) in alcaldias" :key="idx" :value="al">{{al}}</option>
+                </BSelectVal>
+                <BSelectVal v-else rules="required" label="Municipio" v-model="patient.municipio">
+                    <option v-for="(mun, idx) in municipios" :key="idx" :value="mun">{{mun}}</option>
+                </BSelectVal>
+                <div class="field">
+                    <label class="label">Dirección</label>
+                    <div class="control">
+                        <input type="text" class="input" placeholder="Dirección (opcional)" v-model="patient.address">
+                    </div>
+                </div>
+                <BSelectVal rules="required" label="Estado civil" v-model="patient.maritalStatus">
+                    <option v-for="(type, idx) in maritalStatuses" :key=idx :value="type">{{ type }}</option>
+                </BSelectVal>
+                <div class="field">
+                    <label class="label">Ocupación (opcional)</label>
+                    <div class="control">
+                        <input type="text" class="input" v-model="patient.occupation" placeholder="Ocupación">
+                    </div>
+                </div>
+                <BSelectVal rules="required" label="Modalidad de supervisión" v-model="patient.attentionType">
+                    <option v-for="(type, idx) in attentionTypes" :key=idx :value="type">{{ type }}</option>
+                </BSelectVal>
+                <BSelectVal rules="required" label="Tipo de servicio" v-model="patient.askedAttention">
+                    <option v-for="(type, idx) in askedAttentions" :key=idx :value="type">{{ type }}</option>
+                </BSelectVal>
+                <!-- <BSelectVal rules="required" label="Tipo de paciente" v-model="patient.patientType">
+                    <option v-for="(type, idx) in patientTypes" :key=idx :value="idx">{{ type }}</option>
+                </BSelectVal> -->
+                <BSelectVal rules="required" label="Orientación solicitada" v-model="patient.askedType">
+                    <option v-for="(type, idx) in askedTypes" :key=idx :value="type">{{ type }}</option>
+                </BSelectVal>
+                <!-- preconsulta -->
+                <div class="field">
+                    <label class="label">Motivo de la persona para solicitar atención psicológica</label>
+                    <p class="is-italic">Describa la problemática o motivo por el cual solicita el programa de terapeuta invitado.</p>
+                    <div class="control">
+                        <textarea class="textarea" v-model="patient.reason" ></textarea>
+                    </div>
+                </div>
+                <!-- <div class="field">
+                    <label class="label">Síntoma principal</label>
+                    <div class="control">
+                        <div class="select">
+                            <select v-model="patient.mainProblem">
+                                <option v-for="symptom in symptomsList" :key="symptom" :value="symptom">{{symptom}}</option>
+                            </select>
+                        </div>
+                    </div>
+                </div> -->
+                <BSelectVal rules="required" label="Síntoma principal" v-model="patient.mainProblem">
+                    <option v-for="symptom in symptomsList" :key="symptom" :value="symptom">{{symptom}}</option>
+                </BSelectVal>
+                <div class="field">
+                    <label class="label">Listado de criterios (Sintomatología detectada por el terapeuta)</label>
+                    <p class="is-italic">Seleccione sólo aquellas problemáticas que le estén afectando en la actualidad</p>
+                    <div class="control" v-for="(symptom,idx) in symptomsList" :key="idx">
+                        <label class="checkbox"><input type="checkbox" v-model="patient.symptoms[symptomsList[idx]]"> {{symptom}}</label>
+                    </div>
+                </div>
+
+                <!-- <b-button v-if="!patientId" type="is-info" @click="signup" :loading="performingRequest" >Registrar</b-button> -->
+                <a v-if="!patientId" @click="passes(signup)" class="button is-info" :class="{'is-loading': performingRequest}">Registrar</a>
+                <a v-else class="button is-info" :class="{'is-loading': performingRequest}" @click="passes(update)"> Actualizar</a>
+            </form>
+        </ValidationObserver>
+    </div>
 </template>
 
 <script>
@@ -143,7 +135,7 @@ import { ValidationObserver } from 'vee-validate'
 import BInputVal from '@/components/inputs/BInputVal'
 import BSelectVal from '@/components/inputs/BSelectVal'
 
-import { attentionTypes, maritalStatuses, askedAttentions, patientTypes, askedTypes, problems, alcaldias, municipios } from '@/constants.js';
+import { attentionTypes, educationLevels, maritalStatuses, askedAttentions, patientTypes, askedTypes, problems, alcaldias, municipios } from '@/constants.js';
 import {generateKeywords} from '@/utils.js';
 
 export default {
@@ -170,10 +162,11 @@ export default {
         askedAttentions: { type: Array, default: () => (askedAttentions) },
         patientTypes: { type: Array, default: () => (patientTypes) },
         askedTypes: { type: Array, default: () => (askedTypes) },
+        educationLevels: { type: Array, default: () => (educationLevels) },
     },
     data() {
         return {
-            patientId:null,
+            patientId: this.$route.params.id,
             patient: {
                 name: null,
                 lastName: '',
@@ -189,21 +182,21 @@ export default {
                 alcaldia: alcaldias[0],
                 municipio: null,
                 address: null,
-                maritalStatus: 0,
-                education: 0,
+                maritalStatus: maritalStatuses[0],
+                education: educationLevels[0],
                 occupation: '',
                 callReason: '',
-                attentionType: 0,
-                askedAttention: 0,
-                patientType: 0,
-                askedType: 0,
+                attentionType: attentionTypes[0],
+                askedAttention: askedAttentions[0],
+                // patientType: ,
+                askedType: askedTypes[0],
                 reason: '',
                 symptoms: {},
-                mainProblem: this.symptomsList[0],
+                mainProblem: problems[0],
             },
             performingRequest: false,
-            fbErrors: {},
-            errorsExist: false
+            // fbErrors: ,
+            // errorsExist: false
         }
     },
     methods: {
@@ -264,7 +257,7 @@ export default {
             .finally(()=>this.performingRequest=false)
         },
         changeAlMun() {
-            if (this.patient.estado == "CDMX") {
+            if (this.patient.estado != "CDMX") {
                 this.patient.municipio = null;
                 this.patient.alcaldia = alcaldias[0];
             } else {
@@ -274,7 +267,7 @@ export default {
         },
     },
     mounted() {
-        this.patientId = this.$route.params.id;
+        // this.patientId = this.$route.params.id;
         if (this.patientId) {
             this.getPatient();
         }

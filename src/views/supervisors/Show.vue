@@ -8,19 +8,22 @@
             </ul>
         </nav>
         <h1 class="title">Datos del {{supType}}</h1>
-        <table v-if="supervisor != null" class="table is-fullwidth is-hoverable is-striped">
-            <tbody>
-                <tr>
-                    <th>Nombre</th>
-                    <td>{{fullName}}</td>
-                </tr>
-                <tr><th>Número de cuenta o número de trabajador o curp</th><td>{{supervisor.accountNum}}</td></tr>
-                <tr><th>Tipo de usuario</th><td>{{userType}}</td></tr>
-            </tbody>
-        </table>
-        <template v-if="userProfile.userType == 2">
-            <router-link class="button is-info" :to="'/supervisores/' + supervisorId + '/editar'">Editar</router-link>
+        <template v-if="supervisor != null">
+            <table class="table is-fullwidth is-hoverable is-striped">
+                <tbody>
+                    <tr>
+                        <th>Nombre</th>
+                        <td>{{fullName}}</td>
+                    </tr>
+                    <tr><th>Número de cuenta o número de trabajador o curp</th><td>{{supervisor.accountNum}}</td></tr>
+                    <tr><th>Tipo de usuario</th><td>{{userType}}</td></tr>
+                </tbody>
+            </table>
+            <template v-if="userProfile.userType == 2">
+                <router-link class="button is-info" :to="'/supervisores/' + supervisorId + '/editar'">Editar</router-link>
+            </template>
         </template>
+        <p v-else class="is-italic">No se encontró al supervisor, posiblemente fue borrado del sistema.</p>
     </div>
 </template>
 
@@ -45,7 +48,7 @@ export default {
     },
     computed: {
         supType() {
-            if (this.supervisor == null) return null;
+            if (this.supervisor == null) return 'supervisor';
             if (this.supervisor.userType == 2) {
                 return 'supervisor';
             } else {
