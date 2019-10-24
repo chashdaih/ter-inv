@@ -38,26 +38,26 @@
             <div class="field">
                 <label class="label">Nombre</label>
                 <div class="control">
-                    <input v-model="profile.name" class="input" type="text" placeholder="Nombre">
+                    <input v-model.trim="profile.name" class="input" type="text" placeholder="Nombre">
                 </div>
             </div>
             <div class="field">
                 <label class="label">Apellido paterno</label>
                 <div class="control">
-                    <input v-model="profile.lastName" class="input" type="text" placeholder="Apellido paterno">
+                    <input v-model.trim="profile.lastName" class="input" type="text" placeholder="Apellido paterno">
                 </div>
             </div>
             <div class="field">
                 <label class="label">Apellido materno</label>
                 <div class="control">
-                    <input v-model="profile.mothersName" class="input" type="text" placeholder="Apellido materno">
+                    <input v-model.trim="profile.mothersName" class="input" type="text" placeholder="Apellido materno">
                 </div>
             </div>
             <template v-if="profile.userType < 3">
             <div class="field">
                 <label class="label">Número de cuenta o número de trabajador o curp</label>
                 <div class="control">
-                    <input v-model="profile.accountNum" class="input" type="text" placeholder="Número de cuenta o número de trabajador o curp">
+                    <input v-model.trim="profile.accountNum" class="input" type="text" placeholder="Número de cuenta o número de trabajador o curp">
                 </div>
             </div>
             <div class="field">
@@ -73,28 +73,22 @@
             </template>
 
             <template v-else>
-                <div class="field">
-                <label class="label">Apellido materno</label>
-                <div class="control">
-                    <input v-model="profile.mothersName" class="input" type="text" placeholder="Apellido materno">
-                </div>
-            </div>
             <div class="field">
                 <label class="label">Teléfono 1</label>
                 <div class="control">
-                    <input v-model="profile.phone1" class="input" type="text" placeholder="Teléfono 1">
+                    <input v-model.trim="profile.phone1" class="input" type="text" placeholder="Teléfono 1">
                 </div>
             </div>
             <div class="field">
                 <label class="label">Teléfono 2</label>
                 <div class="control">
-                    <input v-model="profile.phone2" class="input" type="text" placeholder="Teléfono 2">
+                    <input v-model.trim="profile.phone2" class="input" type="text" placeholder="Teléfono 2">
                 </div>
             </div>
             <div class="field">
                 <label class="label">Dirección del consultorio</label>
                 <div class="control">
-                    <input v-model="profile.officeAddress" class="input" type="text" placeholder="Dirección del consultorio">
+                    <input v-model.trim="profile.officeAddress" class="input" type="text" placeholder="Dirección del consultorio">
                 </div>
             </div>
             <div class="field">
@@ -131,19 +125,19 @@
             <div class="field">
                 <label class="label">Horarios de atención</label>
                 <div class="control">
-                    <input v-model="profile.officeHours" class="input" type="text" placeholder="Horarios de atención">
+                    <input v-model.trim="profile.officeHours" class="input" type="text" placeholder="Horarios de atención">
                 </div>
             </div>
             <div class="field">
                 <label class="label">Cupo máximo</label>
                 <div class="control">
-                    <input type="number" class="input" placeholder="Cupo máximo (número)" v-model="profile.maxCap" required min="1">
+                    <input type="number" class="input" placeholder="Cupo máximo (número)" v-model.number="profile.maxCap" required min="1">
                 </div>
             </div>
             <div class="field">
                 <label class="label">Especificaciones</label>
                 <div class="control">
-                    <input v-model="profile.specs" class="input" type="text" placeholder="Especificaciones">
+                    <input v-model.trim="profile.specs" class="input" type="text" placeholder="Especificaciones">
                 </div>
             </div>
             <div v-if="profile.target" class="field">
@@ -154,10 +148,10 @@
                     </label>
                 </div>
             </div>
-            <div v-if="profile.attentionType" class="field">
+            <div class="field">
                 <label class="label">Tipo de atención</label>
                 <div v-for="(type, idx) in askedAttentions" :key="idx" class="control">
-                    <label class="checkbox">
+                    <label class="checkbox" v-if="profile.attentionType">
                         <input v-model="profile.attentionType[type]" type="checkbox" > {{type}}
                     </label>
                 </div>
@@ -185,6 +179,7 @@
 
 <script>
 const fb = require('@/firebaseConfig.js');
+import {generateKeywords} from '@/utils.js';
 import { problems, alcaldias, municipios, patientTypes, askedAttentions, askedTypes } from '@/constants.js';
 import Swal from 'sweetalert2';
 
@@ -273,6 +268,7 @@ export default {
         },
         updatePersonalData() {
             this.changingData = true;
+            this.profile.keywords = generateKeywords([this.profile.name, this.profile.lastName, this.profile.mothersName]);
             fb.usersCollection.doc(this.user.uid).update(this.profile)
             .then(()=>{
                 this.$store.commit('setUserProfile', this.profile);

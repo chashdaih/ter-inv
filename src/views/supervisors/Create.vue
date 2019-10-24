@@ -126,6 +126,7 @@ export default {
         },
         update() {
             this.performingRequest = true;
+            this.supervisor.keywords = generateKeywords([this.supervisor.name, this.supervisor.lastName, this.supervisor.mothersName]);
             usersCollection.doc(this.supervisorId).update(this.supervisor)
             .then(()=>{
                 Swal.fire({

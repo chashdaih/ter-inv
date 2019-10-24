@@ -14,7 +14,7 @@
         <b-table :loading="loading" :data="referals">
             <template slot-scope="props">
                 <b-table-column label="Fecha de referenciación">{{props.row.data.timestamp.toDate().toISOString().split("T")[0]}}</b-table-column>
-                <b-table-column label="Nombre del terapeuta"><router-link class="button is-link" :to="'/terapeutas/' + props.row.data.therapistId">{{props.row.data.therapistName}}</router-link></b-table-column>
+                <b-table-column label="Nombre del terapeuta"><router-link class="button is-link" :to="'/terapeutas/' + props.row.data.therapistId">{{props.row.data.therapistsName}}</router-link></b-table-column>
                 <b-table-column label="Referido por"><router-link class="button is-success" :to="'/supervisores/' + props.row.data.referrerId">{{props.row.data.referrerName}}</router-link></b-table-column>
                 <b-table-column label="Estatus de la referencia"><span class="tag">{{props.row.data.status}}</span></b-table-column>
                 <b-table-column label="Número de sesiones esperadas">{{props.row.data.expectedAppts}}</b-table-column>

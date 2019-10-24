@@ -2,9 +2,9 @@
     <div class="migration" style="background-color: white;">
         <h1 class="title">Migrar</h1>
         <!-- <label v-if="therapists.length > 0" class="label">Se tienen</label> -->
-        <!-- <a @click.prevent="migrar" class="button" :class="{'is-loading': loading}">Migrar terapeutas</a> -->
-        <!-- <a @click.prevent="migrarPacientes" class="button" :class="{'is-loading': loading}">Migrar pacientes</a> -->
-        <a @click.prevent="migrarRefers" class="button" :class="{'is-loading': loading}">Migrar referencias</a>
+        <a @click.prevent="migrar" class="button" :class="{'is-loading': loading}">Migrar terapeutas</a>
+        <a @click.prevent="migrarPacientes" class="button" :class="{'is-loading': loading}">Migrar pacientes</a>
+        <!-- <a @click.prevent="migrarRefers" class="button" :class="{'is-loading': loading}">Migrar referencias</a> -->
     </div>
 </template>
 
@@ -32,7 +32,7 @@ export default {
     },
     methods: {
         fetchTherapists() {
-            axios.get('./ther.json')
+            axios.get('./ther2.json')
             .then(res=>{
                 therapists= res.data;
             });
@@ -230,10 +230,10 @@ export default {
         }
     },
     mounted() {
-        // this.fetchTherapists();
+        this.fetchTherapists();
         // this.fetchProblems();
         // this.fetchPatients();
-        this.fetchRefers();
+        // this.fetchRefers();
     }
 }
 </script>

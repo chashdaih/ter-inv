@@ -8,40 +8,65 @@ admin.initializeApp();
 let mailTransport = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-        user: 'terapeuta.invitado@gmail.com',
-        pass: 'Tera inv',
+        user: 'papdadmo@gmail.com',
+        pass: 'melaniefigueroa',
     },
 });
 
 // Sends email when a therapist gets a new reference
-exports.sendEmailNewReference = functions.firestore.document('/refers/{uid}').onCreate(async (snap, context) => {
-    // const newValue = change.after.data();
-    // const previousValue = change.before.data();
+// exports.sendEmailNewReference = functions.firestore.document('/refers/{uid}').onCreate(async (snap, context) => {
+//     // const newValue = change.after.data();
+//     // const previousValue = change.before.data();
 
-    // if (!newValue.patients) return null;
+//     // if (!newValue.patients) return null;
 
-    // if (newValue.patients.length === previousValue.patients.length) {
-    //     return null;
-    // }
-    const uid = snap.data().therapistId;
+//     // if (newValue.patients.length === previousValue.patients.length) {
+//     //     return null;
+//     // }
+//     const uid = snap.data().therapistId;
 
-    const user = await admin.auth().getUser(uid)
-    const userEmail = user.toJSON().email;
+//     const user = await admin.auth().getUser(uid)
+//     const userEmail = user.toJSON().email;
+
+//     const mailOptions = {
+//         from: '"Terapeuta Invitado", <noreply@firebase.com>', // todo: revisar por que esto no hace nada :/
+//         to: userEmail,
+//     };
+
+//     // Building email message
+//     mailOptions.subject = "Se te ha referido un nuevo usuario";
+//     mailOptions.text = 
+//     `Hola.
+//     Un nuevo usuario ha sido referido contigo.
+//     Por favor, entra a la plataforma para ver su información.
+        
+//     Atte. El equipo de terapeuta invitado.`;
+
+//     try {
+//         await mailTransport.sendMail(mailOptions);
+//         console.log('mail enviado');
+//     } catch (error) {
+//         console.error('Hubo un error', error);
+//     }
+//     return null;
+// });
+
+exports.sendNewRefEmail = functions.https.onCall(async data => {
+
+    const therapist = await admin.auth().getUser(data.therapistId);
+    const therapistMail = therapist.toJSON().email;
 
     const mailOptions = {
-        from: '"Terapeuta Invitado", <noreply@firebase.com>', // todo: revisar por que esto no hace nada :/
-        to: userEmail,
+        to: therapistMail,
+        subject: "Notificación de nuevo paciente",
+        text: `
+        ¡Hola!.
+        Se le ha referenciado un nuevo usuario.
+
+        Por favor, entre a la plataforma para más información.
+        `,
     };
-
-    // Building email message
-    mailOptions.subject = "Se te ha referido un nuevo usuario";
-    mailOptions.text = 
-    `Hola.
-    Un nuevo usuario ha sido referido contigo.
-    Por favor, entra a la plataforma para ver su información.
-        
-    Atte. El equipo de terapeuta invitado.`;
-
+    
     try {
         await mailTransport.sendMail(mailOptions);
         console.log('mail enviado');
@@ -51,15 +76,15 @@ exports.sendEmailNewReference = functions.firestore.document('/refers/{uid}').on
     return null;
 });
 
-exports.toggleUserStatus = functions.firestore.document('/users/{uid}').onUpdate(async (change, context) => {
-    const newValue = change.after.data();
-    if (newValue.disabled !== null) {
-        await admin.auth().updateUser(context.params.uid, {
-            disabled: newValue.disabled,
-        });
-    } 
-    return null;
-});
+// exports.toggleUserStatus = functions.firestore.document('/users/{uid}').onUpdate(async (change, context) => {
+//     const newValue = change.after.data();
+//     if (newValue.disabled !== null) {
+//         await admin.auth().updateUser(context.params.uid, {
+//             disabled: newValue.disabled,
+//         });
+//     } 
+//     return null;
+// });
 
 exports.createNewUser = functions.https.onCall(data => {
 

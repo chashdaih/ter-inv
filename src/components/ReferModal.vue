@@ -104,7 +104,9 @@ export default {
             let query = fb.usersCollection;
             query = query.where('userType', '==', 3) // sean terapeutas
             query = query.where(`target.${this.patientType}`, '==', true) // que atiendan la edad del paciente
-            query = query.where(`symptoms.${this.patient.data.mainProblem}`, '==', true);
+            // todo hacer un select con todos los síntomas del paciente
+            // query = query.where(`symptoms.${this.patient.data.mainProblem}`, '==', true);
+            
             // todo where is not disabled
             // todo pagination
             try {

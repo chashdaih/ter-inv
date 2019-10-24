@@ -20,6 +20,7 @@ const router = new Router({
     { path: '/usuarios/registrar', name: 'registerPatient', component: () => import('./views/patients/Create.vue'), meta: { requiresAuth: true } },
     { path: '/usuarios/:id',  component: () => import('./views/patients/Show.vue'), meta: { requiresAuth: true } },
     { path: '/usuarios/:id/editar',  component: () => import('./views/patients/Create.vue'), meta: { requiresAuth: true } },
+    { path: '/usuarios/:id/referenciar',  component: () => import('./views/MakeRefer.vue'), meta: { requiresAuth: true } },
     { path: '/usuarios/:id/referencias', component: () => import('./views/patients/Refer.vue'), meta: { requiresAuth: true } },
     { path: '/usuarios/:id/referencias/:ref', component: () => import('./views/appoinments/Index.vue'), meta: { requiresAuth: true } },
     // supervisors

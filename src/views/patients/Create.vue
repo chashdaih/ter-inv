@@ -108,9 +108,9 @@
                         </div>
                     </div>
                 </div> -->
-                <BSelectVal rules="required" label="Síntoma principal" v-model="patient.mainProblem">
+                <!-- <BSelectVal rules="required" label="Síntoma principal" v-model="patient.mainProblem">
                     <option v-for="symptom in symptomsList" :key="symptom" :value="symptom">{{symptom}}</option>
-                </BSelectVal>
+                </BSelectVal> -->
                 <div class="field">
                     <label class="label">Listado de criterios (Sintomatología detectada por el terapeuta)</label>
                     <p class="is-italic">Seleccione sólo aquellas problemáticas que le estén afectando en la actualidad</p>
@@ -192,7 +192,7 @@ export default {
                 askedType: askedTypes[0],
                 reason: '',
                 symptoms: {},
-                mainProblem: problems[0],
+                // mainProblem: problems[0],
             },
             performingRequest: false,
             // fbErrors: ,
@@ -236,6 +236,7 @@ export default {
         },
         update() {
             this.performingRequest = true;
+            this.patient.keywords = generateKeywords([this.patient.name, this.patient.lastName, this.patient.mothersName]);
             fb.patientsCollection.doc(this.patientId).update(this.patient)
             .then(()=>{
                 Swal.fire({

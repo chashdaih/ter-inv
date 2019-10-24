@@ -28,7 +28,12 @@ export const store =  new Vuex.Store({
       state.currentUser = val
     },
     setUserProfile(state, val) {
-        state.userProfile = val
+      if (val.userType == 3) {
+        if (!val.attentionType) {
+          val.attentionType = {};
+        }
+      }
+        state.userProfile = val;
     },
     // patients
     SET_PAT_SEARCH(state, searchValue ) {
@@ -66,12 +71,14 @@ export const store =  new Vuex.Store({
       // .catch(err=>{console.log(err)})
     },
     getPatients({ commit, state }) {
-      let patientsRef = state.db.collection('patients');
-      let unsub = patientsRef.where('keywords', 'array-contains', state.patSearch.toLowerCase()).orderBy('createdAt', 'desc').limit(10).onSnapshot(snapshot => {
-        commit('CLEAR_PATIENTS');
-        snapshot.forEach(patient => commit('SET_PATIENTS', { patient }))
-      });
-      commit('SET_UNSUB_PATS', unsub);
+      if (state.patSearch.length > 2) {
+        let patientsRef = state.db.collection('patients');
+        let unsub = patientsRef.where('keywords', 'array-contains', state.patSearch.toLowerCase()).orderBy('createdAt', 'desc').limit(10).onSnapshot(snapshot => {
+          commit('CLEAR_PATIENTS');
+          snapshot.forEach(patient => commit('SET_PATIENTS', { patient }))
+        });
+        commit('SET_UNSUB_PATS', unsub);
+      }
     }, 
     async getSelectedPatient({ commit, state }, patientId) {
       let patient = state.patients.filter(obj => obj.id == patientId)[0];

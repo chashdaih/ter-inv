@@ -5,12 +5,12 @@
         <br>
         <br>
         <div class="field">
-            <label class="label">Filtrar por nombres</label>
+            <label class="label">Buscar usuario por nombres</label>
             <div class="control">
-                <input type="text" class="input" placeholder="Buscar" v-model="search" @keyup="getPatients(search)" />
+                <input type="text" class="input" placeholder="Por favor, introduce al menos 3 letras" v-model="search" @keyup="getPatients(search)" />
             </div>
         </div>
-        <b-table :data="patients" :loading="isSearching">
+        <b-table :data="patients" :loading="isSearching" style="min-height:200px">
             <template slot-scope="props">
                 <b-table-column field="name" sortable label="Nombre" >{{props.row.data.name}}</b-table-column>
                 <b-table-column field="lastName" sortable label="Apellido paterno" >{{props.row.data.lastName}}</b-table-column>
@@ -24,28 +24,28 @@
                     <p v-else>-</p>
                 </b-table-column>
                 <b-table-column label="Referenciar">
-                    <a  class="button is-info" @click="showModal(props.row)" >Referenciar</a>
+                    <a  class="button is-info" @click.prevent="selectPatient(props.row)" >Referenciar</a>
                 </b-table-column>
             </template>
         </b-table>
-        <refer-modal 
+        <!-- <refer-modal 
             :class="{ 'is-active': isModalVisible }" 
             :patient="selectedPatient" 
             @close-refer-modal="clearModal" 
-        ></refer-modal>
+        ></refer-modal> -->
     </div>
 </template>
 
 <script>
 import { mapState, mapActions } from 'vuex';
-import ReferModal from '@/components/ReferModal.vue';
+// import ReferModal from '@/components/ReferModal.vue';
 
 export default {
-    components: { ReferModal, },
+    // components: { ReferModal, },
     data() {
         return {
-            isModalVisible: false,
-            selectedPatient: null,
+            // isModalVisible: false,
+            // selectedPatient: null,
             isSearching: false,
         }
     },
@@ -61,20 +61,24 @@ export default {
         }
     },
     methods: {
-        showModal(patient) {
-            this.selectedPatient = patient;
-            this.isModalVisible = true;
-        },
-        clearModal() {
-            this.isModalVisible=false;
-            this.selectedPatient = null;
-        },
+        // showModal(patient) {
+        //     this.selectedPatient = patient;
+        //     this.isModalVisible = true;
+        // },
+        // clearModal() {
+        //     this.isModalVisible=false;
+        //     this.selectedPatient = null;
+        // },
         ...mapActions(['getPatients']),
-    },
-    mounted() {
-        if (this.patients.length === 0) {
-            this.getPatients('');
+        selectPatient(patient) {
+            this.$store.commit('SET_SEL_PATIENT', {patient});
+            this.$router.push(`/usuarios/${patient.id}/referenciar`);
         }
-    }
+    },
+    // mounted() {
+    //     if (this.patients.length === 0) {
+    //         this.getPatients('');
+    //     }
+    // }
 }
 </script>

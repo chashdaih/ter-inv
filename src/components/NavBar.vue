@@ -2,7 +2,7 @@
     <nav class="navbar" :class="navColor" role="navigation" aria-label="main navigation">
         <div class="navbar-brand">
             <a href="https://psicologia.unam.mx" class="navbar-item">
-                <img src="img/psiw.png" alt="Logo facultad Psicología UNAM" />
+                <img src="/img/psiw.png" alt="Logo facultad Psicología UNAM" />
             </a>
             <a role="button" class="navbar-burger burger" :class="{'is-active': isActive}" @click="toggleMenu" aria-label="menu" aria-expanded="false">
                 <span aria-hidden="true"></span>
@@ -51,7 +51,9 @@ export default {
     },
     methods: {
         logout() {
-            this.$store.state.unsubscribeFromPats();
+            if (this.$store.state.unsubscribeFromPats != null) {
+                this.$store.state.unsubscribeFromPats();
+            }
             auth.signOut()
             .then(() => {
                 this.$store.dispatch('clearData')
