@@ -12,35 +12,12 @@
             <h1 class="title">Usuarios referidos al terapeuta {{fullName}}</h1>
         </template>
         <h1 v-else class="title">Usuarios referenciados</h1>
-        <!-- <table v-if="refers.length > 0" class="table is-fullwidth">
-            <thead>
-                <tr>
-                    <th>Nombre del paciente</th>
-                    <th>Fecha de referencia</th>
-                    <th>Estatus de la atención</th>
-                    <th>Datos del paciente</th>
-                    <th>Sesiones planeadas</th>
-                    <th>Sesiones registradas</th>
-                    <th>Listado de sesiones</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr v-for="(refer, i) in refers" :key="i">
-                    <td>{{refer.data.patientName}}</td>
-                    <td>{{refer.data.timestamp.toDate().toISOString().split("T")[0]}}</td>
-                    <td>{{refer.data.status}}</td>
-                    <td>
-                        
-                    </td>
-                    <td><a @click.prevent="showModal(refer.id)" class="button is-light" :class="{'is-loading':updating}">{{refer.data.expectedAppts}}</a></td>
-                    <td>{{}}</td>
-                    <td>
-                        <router-link class="button is-info" :to="'/usuarios/' + refer.data.patientId + '/referencias/' + refer.id">Ir</router-link>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        <p v-else class="is-italic">No tiene ningún usuario referenciado.</p> -->
+        <h2 class="subtitle">Filtar por estatus de la referencia</h2>
+        <b-field >
+            <b-radio-button @input="getMyRefs" v-model="statusFilter"  :native-value="refStatuses[0]" >{{refStatuses[0]}}</b-radio-button>
+            <b-radio-button @input="getMyRefs" v-model="statusFilter"  :native-value="refStatuses[1]" >{{refStatuses[1]}}</b-radio-button>
+            <b-radio-button @input="getMyRefs" v-model="statusFilter"  :native-value="refStatuses[2]" >{{refStatuses[2]}}</b-radio-button>
+        </b-field>
         <b-table :data="refers" :loading="loading">
             <template slot-scope="props">
                 <b-table-column label="Nombre del paciente">{{props.row.data.patientName}}</b-table-column>
@@ -118,11 +95,12 @@
 <script>
 import { mapState } from 'vuex';
 import Swal from 'sweetalert2';
-const fb = require('@/firebaseConfig.js');
+import {firebase, usersCollection, refersCollection, patientsCollection } from '@/firebaseConfig.js';
 
 export default {
     props: {
         statuses: { type: Array, default: () => (['Alta', 'Baja']) },
+        refStatuses: { type: Array, default: () => (['Activo', 'Terminado', 'Ambos']) }
     },
     data() {
         return {
@@ -140,6 +118,8 @@ export default {
             selectedPatientId: null,
             newStatus: this.statuses[0],
             statusComments: null,
+            // filter
+            statusFilter: this.refStatuses[0],
         }
     },
     computed: {
@@ -156,9 +136,14 @@ export default {
         getMyRefs() {
             this.loading = true;
             this.refers = [];
-            fb.refersCollection.where('therapistId', '==', this.therapistId).get()
-            .then((querySnapshot) => {
-                querySnapshot.forEach(doc=> {
+            let query = refersCollection;
+            query = query.where('therapistId', '==', this.therapistId);
+            if (this.statusFilter == this.refStatuses[0] || this.statusFilter == this.refStatuses[1]) {
+                query = query.where('status', '==', this.statusFilter)
+            }
+            query.get()
+            .then((docs) => {
+                docs.forEach(doc=> {
                     this.refers.push({ id: doc.id,  data: doc.data() });
                 });
             })
@@ -181,7 +166,7 @@ export default {
         },
         updateExpected() {
             this.loading = true;
-            fb.refersCollection.doc(this.selectedId).update({
+            refersCollection.doc(this.selectedId).update({
                 expectedAppts: this.newValue
             })
             .then(() => {
@@ -199,7 +184,7 @@ export default {
             .finally(()=>this.loading=false);
         },
         getTherapist() {
-            fb.usersCollection.doc(this.therapistId).get()
+            usersCollection.doc(this.therapistId).get()
             .then(res => this.therapist = res.data())
             .catch(function(error) {
                 console.log("Error getting documents: ", error);
@@ -227,12 +212,12 @@ export default {
                 changerId: this.currentUser.uid,
                 comments: this.statusComments,
             };
-            fb.patientsCollection.doc(this.selectedPatientId).update(statusObject)
+            patientsCollection.doc(this.selectedPatientId).update(statusObject)
             .then(() => {
-                return fb.refersCollection.doc(this.selectedId).update({status: 'Terminado'})
+                return refersCollection.doc(this.selectedId).update({status: 'Terminado'})
             })
             .then(() => {
-                return fb.usersCollection.doc(this.therapistId).update({activePatients: fb.firebase.firestore.FieldValue.increment(-1)})
+                return usersCollection.doc(this.therapistId).update({activePatients: firebase.firestore.FieldValue.increment(-1)})
             })
             .then(() => {
                 this.getMyRefs();

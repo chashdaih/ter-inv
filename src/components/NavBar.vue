@@ -10,6 +10,7 @@
                 <span aria-hidden="true"></span>
             </a>
         </div>
+        <template v-if="currentUser">
         <div class="navbar-menu" :class="{'is-active': isActive}">
             <div class="navbar-start">
                 <router-link v-if="$store.state.userProfile.userType < 3" class="navbar-item" to="/usuarios">Usuarios</router-link>
@@ -24,12 +25,14 @@
                 </div>
             </div>
         </div>
+        </template>
     </nav>
 </template>
 
 <script>
 // const fb = require('@/firebaseConfig.js');
 import { auth } from '@/firebaseConfig.js';
+import { mapState } from 'vuex';
 
 export default {
     data() {
@@ -44,10 +47,13 @@ export default {
                 return 'is-info';
             } else if (type == 2) {
                 return 'is-dark';
-            } else {
+            } else if (type == 3) {
                 return 'is-link';
+            } else {
+                return 'is-unam';
             }
-        }
+        },
+        ...mapState(['currentUser'])
     },
     methods: {
         logout() {

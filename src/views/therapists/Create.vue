@@ -23,7 +23,7 @@
                 <BInputVal rules="required" type="text" label="Nombre" v-model="therapist.name" placeholder="Nombre" />
                 <BInputVal rules="required" type="text" label="Apellido paterno" v-model="therapist.lastName" placeholder="Apellido paterno" />
                 <BInputVal rules="required" type="text" label="Apellido materno" v-model="therapist.mothersName" placeholder="Apellido materno" />
-                <BInputVal rules="required" type="text" label="Nombre" v-model="therapist.phone1" placeholder="Teléfono 1" />
+                <BInputVal rules="required" type="text" label="Teléfono 1" v-model="therapist.phone1" placeholder="Teléfono 1" />
                 <div class="field">
                     <label class="label">Teléfono 2 (opcional)</label>
                     <div class="control">

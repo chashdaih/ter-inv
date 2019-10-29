@@ -3,7 +3,9 @@ import Vuex from 'vuex'
 // const fb = require('./firebaseConfig.js')
 import { auth, usersCollection, db } from '@/firebaseConfig.js';
 
-Vue.use(Vuex)
+// import Referrals from '@/store/referrals.js';
+
+Vue.use(Vuex);
 
 auth.onAuthStateChanged(user => {
   if (user) {
@@ -92,5 +94,6 @@ export const store =  new Vuex.Store({
       }
       commit('SET_SEL_PATIENT', { patient });
     }
-  }
+  },
+  // modules: { Referrals, }
 })

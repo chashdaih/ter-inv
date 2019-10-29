@@ -102,6 +102,16 @@ exports.createNewUser = functions.https.onCall(data => {
     
 });
 
+exports.changePassword = functions.https.onCall(data => {
+    const uid = data.uid;
+    const password = data.password;
+    return admin.auth().updateUser(uid, { password })
+    .then(userRecord => userRecord.toJSON())
+    .catch(error => {
+        throw new functions.https.HttpsError(error);
+    });
+})
+
 exports.deleteUser = functions.https.onCall(async data => {
     const uid = data.uid;
 

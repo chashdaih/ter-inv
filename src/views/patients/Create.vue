@@ -37,7 +37,13 @@
                         <input type="text" class="input" v-model="patient.phoneWork" placeholder="Teléfono trabajo (opcional)" >
                     </div>
                 </div>
-                <BInputVal rules="email" type="email" label="Correo electrónico" v-model="patient.email" placeholder="Correo (opcional)" />
+                <!-- <BInputVal rules="email" type="email" label="Correo electrónico" v-model="patient.email" placeholder="Correo (opcional)" /> -->
+                <div class="field">
+                    <label class="label">Correo electrónico (opcional)</label>
+                    <div class="control">
+                        <input type="email" class="input" v-model="patient.email" placeholder="Correo electrónico (opcional)" >
+                    </div>
+                </div>
                 <BSelectVal rules="required" label="¿Pertenece a la UNAM?" v-model="patient.isUnam">
                     <option value=false>No</option>
                     <option value=true>Si</option>

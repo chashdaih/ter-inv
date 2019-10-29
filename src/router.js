@@ -39,7 +39,7 @@ const router = new Router({
     // only for guest t.
     { path: '/mis-usuarios', component: () => import('./views/therapists/MyPatients.vue'), meta: { requiresAuth: true } },
     // migration --only-dev
-    // { path: '/migracion', component: () => import('./views/migration/Index.vue') }
+    { path: '/migracion', component: () => import('./views/migration/Index.vue') }
   ]
 })
 

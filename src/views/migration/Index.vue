@@ -2,9 +2,9 @@
     <div class="migration" style="background-color: white;">
         <h1 class="title">Migrar</h1>
         <!-- <label v-if="therapists.length > 0" class="label">Se tienen</label> -->
-        <a @click.prevent="migrar" class="button" :class="{'is-loading': loading}">Migrar terapeutas</a>
-        <a @click.prevent="migrarPacientes" class="button" :class="{'is-loading': loading}">Migrar pacientes</a>
-        <!-- <a @click.prevent="migrarRefers" class="button" :class="{'is-loading': loading}">Migrar referencias</a> -->
+        <!-- <a @click.prevent="migrar" class="button" :class="{'is-loading': loading}">Migrar terapeutas</a> -->
+        <!-- <a @click.prevent="migrarPacientes" class="button" :class="{'is-loading': loading}">Migrar pacientes</a> -->
+        <a @click.prevent="migrarRefers" class="button" :class="{'is-loading': loading}">Migrar referencias</a>
     </div>
 </template>
 
@@ -44,13 +44,15 @@ export default {
             );
         },
         fetchPatients() {
-            axios.get('./patients.json')
+            // axios.get('./patients.json')
+            axios.get('./nuevosPac.json')
             .then(res=> {
                 patients = res.data;
             });
         },
         fetchRefers() {
             axios.get('./refer.json')
+            // axios.get('./nuevasRefs.json')
             .then(res => {
                 refers = res.data;
             })
@@ -154,13 +156,16 @@ export default {
         },
         async migrarPacientes() {
             this.loading = true;
-            for (let i = 9; i < patients.length; i++) {
+            for (let i = 0; i < patients.length - 1; i++) {
                 const paciente = patients[i];
 
                 const name = paciente.nombre;
                 const lastName = paciente.a_paterno;
                 const mothersName = paciente.a_materno;
-                const birthdate = paciente.fecha_nac;
+
+                let date = new Date();
+                date.setFullYear(date.getFullYear() - parseInt(paciente.edad));
+                const birthdate = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
                 const phoneHome = paciente.tel_casa;
                 const phoneCell = paciente.tel_celular;
                 const phoneWork = paciente.tel_laboral;
@@ -185,17 +190,17 @@ export default {
                 const askedAttention = 0;
                 const askedType = 0;
                 const reason = "";
-                const symptoms = {};
-                const mainProblem = paciente.problema;
+                let symptoms = {};
+                symptoms[paciente.problema.split(' ').join('_')] = true;
                 const status = newStatus[paciente.estatus];
                 const registeredBy = "";
                 const createdAt = paciente.fecha;
                 const keywords = generateKeywords([name, lastName, mothersName]);
 
-                const patient = { name, lastName, mothersName, birthdate, phoneHome, phoneCell, phoneWork, email, isUnam, curp, estado, alcaldia, municipio, address, maritalStatus, education, occupation, callReason, attentionType, askedType, reason, symptoms, mainProblem, status, registeredBy, createdAt, keywords };
+                const patient = { name, lastName, mothersName, birthdate, phoneHome, phoneCell, phoneWork, email, isUnam, curp, estado, alcaldia, municipio, address, maritalStatus, education, occupation, callReason, attentionType, askedType, reason, symptoms, status, registeredBy, createdAt, keywords };
                 try {
                     let res = await fb.patientsCollection.doc(paciente.id_paciente.toString()).set(patient)
-                    console.log('bien');
+                    console.log('bien', paciente.id_paciente.toString());
                 } catch (e) {
                     console.error(e);
                 }
@@ -204,7 +209,7 @@ export default {
         },
         async migrarRefers() {
             this.loading = true;
-            for (let i = 0; i < refers.length; i++) {
+            for (let i = 0; i < refers.length -1; i++) {
                 const ref = refers[i];
 
                 const expectedAppts = ref.sesiones_plan;
@@ -214,6 +219,9 @@ export default {
                 const referrerName = ref.referrerName;
                 const status = ref.estado_ref ? 'Activo' : 'Terminado';
                 const therapistId = ref.id_terapeuta.toString();
+                if (!ref.therapistName) {
+                    ref.therapistName = "";
+                }
                 const therapistName = ref.therapistName;
                 const timestamp = fb.firebase.firestore.Timestamp.fromDate(new Date(ref.fecha));
 
@@ -230,10 +238,10 @@ export default {
         }
     },
     mounted() {
-        this.fetchTherapists();
+        // this.fetchTherapists();
         // this.fetchProblems();
         // this.fetchPatients();
-        // this.fetchRefers();
+        this.fetchRefers();
     }
 }
 </script>

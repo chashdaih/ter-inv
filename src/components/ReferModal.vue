@@ -134,7 +134,7 @@ export default {
             .then(()=>{
                 return fb.refersCollection.add({
                     therapistId: this.selectedTherapist.id,
-                    therapistsName: `${this.selectedTherapist.data.name} ${this.selectedTherapist.data.lastName} ${this.selectedTherapist.data.mothersName}`,
+                    therapistName: `${this.selectedTherapist.data.name} ${this.selectedTherapist.data.lastName} ${this.selectedTherapist.data.mothersName}`,
                     patientId: this.patient.id,
                     patientName: `${this.patient.data.name} ${this.patient.data.lastName} ${this.patient.data.mothersName}`,
                     referrerId: this.currentUser.uid,

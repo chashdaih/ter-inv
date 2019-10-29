@@ -27,6 +27,18 @@
                     <td>{{muni}}</td>
                 </tr>
             </table>
+            <a href="https://maps.google.com" class="button is-info" target="_blank">
+                <span>Google Maps</span>
+                <span class="icon">
+                    <b-icon
+                        pack="fas"
+                        icon="external-link-alt"
+                        size="is-small">
+                    </b-icon>
+                </span>
+            </a>
+            <br>
+            <br>
             <div class="field is-horizontal">
                 <div class="field-body">
                     <div class="field">
@@ -74,6 +86,7 @@
                         <b-table-column label="Teléfono">{{props.row.data.phone1}}<template v-if="props.row.data.phone2"> / {{props.row.data.phone2}}</template></b-table-column>
                         <b-table-column label="Dirección">{{props.row.data.officeAddress}}</b-table-column>
                         <b-table-column label="Horarios">{{props.row.data.officeHours}}</b-table-column>
+                        <b-table-column label="Especificaciones">{{props.row.data.specs}}</b-table-column>
                         <b-table-column label="Referenciar"><a @click.prevent="refer(props.row)" class="button is-link">Referenciar</a></b-table-column>
                     </template>
                     <template v-if="!gettingTherapists" slot="empty">
@@ -125,9 +138,15 @@ export default {
         age() {
             return calculateAge(this.selectedPatient.data.birthdate);
         },
-        // ageGroup() {
-        //     if 
-        // },
+        ageGroup() {
+            if (this.age < 13) {
+                return 'Niño';
+            } else if (this.age < 18) {
+                return 'Adolescente';
+            } else {
+                return 'Adulto';
+            }
+        },
         muni(){
             if (this.selectedPatient.data.estado == "CDMX") {
                 return this.selectedPatient.data.alcaldia;
@@ -143,17 +162,16 @@ export default {
             this.therapists = [];
             let query = usersCollection;
             query = query.where('userType', '==', 3) // sean terapeutas
-            // query = query.where(`target.${this.ageGroup}`, '==', true) // que atiendan la edad del paciente
+            query = query.where(`target.${this.ageGroup}`, '==', true) // que atiendan la edad del paciente
             query = query.where(`symptoms.${this.symptom}`, '==', true);
             query = query.where(`estado`, '==', this.estado);
             query = this.estado == "CDMX" ? query.where(`officeAlcaldia`, '==', this.alcaldia) : query.where("officeMunicipio", '==', this.municipio);
-            // todo where is not disabled
             // todo pagination?
             try {
                 const docs = await query.get();
                 docs.forEach(doc => {
                     const data = doc.data();
-                    if (data.maxCap > data.activePatients) {
+                    if (data.maxCap > data.activePatients && data.disabled != true) {
                         this.therapists.push({ id: doc.id,  data });
                     }
                 });
@@ -168,15 +186,16 @@ export default {
         },
         refer(selectedTherapist) {
             const sendMail = firebase.functions().httpsCallable('sendNewRefEmail');
-            const therapistsName = `${selectedTherapist.data.name} ${selectedTherapist.data.lastName} ${selectedTherapist.data.mothersName}`;
+            const therapistName = `${selectedTherapist.data.name} ${selectedTherapist.data.lastName} ${selectedTherapist.data.mothersName}`;
             this.gettingTherapists = true;
+            // todo mark previous refer as ended
             patientsCollection.doc(this.selectedPatient.id).update({
                 status: 'Referido'
             })
             .then(()=>{
                 return refersCollection.add({
                     therapistId: selectedTherapist.id,
-                    therapistsName,
+                    therapistName,
                     patientId: this.selectedPatient.id,
                     patientName: this.fullName,
                     referrerId: this.currentUser.uid,
@@ -208,7 +227,7 @@ export default {
             })
             .then(() => {
                 return sendMail({
-                    therapistsName,
+                    therapistName,
                     therapistId: selectedTherapist.id, 
                     patientName: this.fullName,
                 })
@@ -240,7 +259,7 @@ export default {
         }
         this.symptom = this.symptomsArray[0];
         this.estado = this.selectedPatient.data.estado;
-        if (this.estado = "CDMX") {
+        if (this.estado == "CDMX") {
             this.alcaldia = this.selectedPatient.data.alcaldia;
             this.municipio = municipios[0];
         } else {

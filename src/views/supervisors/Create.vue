@@ -24,6 +24,7 @@
                 <BSelectVal rules="required" label="Tipo de usuario" v-model="supervisor.userType">
                     <option v-for="option in userTypes" :key="option.value" :value="option.value">{{option.text}}</option>
                 </BSelectVal>
+                <br>
                 <button v-if="!supervisorId" class="button is-info" type="submit" @click.prevent="passes(createSupervisor)" :class="{'is-loading': performingRequest}">Registrar</button>
                 <div v-else class="field is-grouped">
                     <div class="control">
@@ -32,12 +33,40 @@
                     <div class="control">
                         <toggle-status :uid="supervisorId" :disabled="supervisor.disabled" v-on:status-changed="onStatusChange"></toggle-status>
                     </div>
-                    <div v-if="currentUser.uid=='s8R9yKP5uJQRNwp1MT8f1PfzPKr1'" class="control">
-                        <button class="button is-danger" type="button" @click.prevent="showDel">Borrar supervisor</button>
-                    </div>
                 </div>
             </ValidationObserver>
         </form>
+        <br>
+        <br>
+        <div v-if="currentUser.uid=='s8R9yKP5uJQRNwp1MT8f1PfzPKr1' && supervisorId" class="control">
+            <b-collapse class="card" aria-id="contentIdForA11y3" :open="false">
+                <div
+                    slot="trigger" 
+                    slot-scope="props"
+                    class="card-header"
+                    role="button"
+                    aria-controls="contentIdForA11y3">
+                    <p class="card-header-title">Acciones administrativas</p>
+                    <a class="card-header-icon">
+                        <b-icon
+                            :icon="props.open ? 'angle-up' : 'angle-down'">
+                        </b-icon>
+                    </a>
+                </div>
+                <div class="card-content">
+                    <form>
+                        <ValidationObserver v-slot="{ passes }">
+                            <BInputVal rules="required|min:6" type="password" vid="newPass" label="Contraseña" v-model="newPass" placeholder="Contraseña" />
+                            <BInputVal rules="required|confirmed:newPass" type="password" label="Confirmar contraseña" v-model="newPassConf" placeholder="Confirmar contraseña" />
+                            <button @click.prevent="passes(updatePass)" class="button is-info" :class="{'is-loading': changingPass}">Cambiar contraseña</button>
+                        </ValidationObserver>
+                    </form>
+                    <!-- <br>
+                    <button class="button is-danger" type="button" @click.prevent="showDel">Borrar supervisor</button> -->
+                </div>
+            </b-collapse>
+
+        </div>
     </div>
 </template>
 
@@ -80,7 +109,11 @@ export default {
             performingRequest: false,
             fbErrors: {},
             errorsExist: false,
+            //
             isDel: false,
+            newPass: '',
+            newPassConf: '',
+            changingPass: false,
         }
     },
     computed: {
@@ -152,6 +185,32 @@ export default {
         },
         showDel() {
             this.isDel = true;
+        },
+        updatePass(){
+            this.changingPass = true;
+            const changePassword = firebase.functions().httpsCallable('changePassword');
+            changePassword({
+                uid: this.supervisorId,
+                password: this.newPass,
+            })
+            .then(()=>{
+                Swal.fire({
+                    title: 'Éxito',
+                    text: 'La contraseña se actualizó exitosamente',
+                    type: "success",
+                    confirmButtonText: 'Aceptar',
+                    // onClose: () => this.$router.push('/usuarios')
+                });
+            })
+            .catch(err =>{
+                Swal.fire({
+                   title: 'Ocurrió un error',
+                   text: err,
+                   type: "error",
+                   confirmButtonText: 'Aceptar' 
+                });
+            })
+            .finally(()=>this.changingPass=false)
         }
     },
     mounted() {
