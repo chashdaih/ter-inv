@@ -8,7 +8,10 @@
                 <li><router-link to="/">Inicio</router-link></li>
                 <li><router-link to="/usuarios">Usuarios</router-link></li>
                 <li v-if="!patientId" class="is-active"><a href="#" aria-current="page">Registrar nuevo usuario</a></li>
-                <li v-else class="is-active"><a href="#" aria-current="page">Actualizar usuario</a></li>
+                <template v-else>
+                    <li><router-link :to="`/usuarios/${patientId}`">{{fullName}}</router-link></li>
+                    <li class="is-active"><a href="#" aria-current="page">Editar</a></li>
+                </template>
             </ul>
         </nav>
         <h1 v-if="!patientId" class="title">Registrar nuevo usuario</h1>
@@ -130,11 +133,34 @@
                 <a v-else class="button is-info" :class="{'is-loading': performingRequest}" @click="passes(update)"> Actualizar</a>
             </form>
         </ValidationObserver>
+        <br>
+        <br>
+        <div v-if="currentUser.uid=='s8R9yKP5uJQRNwp1MT8f1PfzPKr1' && patientId" class="control">
+            <b-collapse class="card" aria-id="contentIdForA11y3" :open="false">
+                <div
+                    slot="trigger" 
+                    slot-scope="props"
+                    class="card-header"
+                    role="button"
+                    aria-controls="contentIdForA11y3">
+                    <p class="card-header-title">Acciones administrativas</p>
+                    <a class="card-header-icon">
+                        <b-icon
+                            :icon="props.open ? 'angle-up' : 'angle-down'">
+                        </b-icon>
+                    </a>
+                </div>
+                <div class="card-content">
+                    <button class="button is-danger" type="button" @click.prevent="showDel">Borrar paciente</button>
+                </div>
+            </b-collapse>
+        </div>
     </div>
 </template>
 
 <script>
-const fb = require('@/firebaseConfig.js')
+// const fb = require('@/firebaseConfig.js')
+import { firebase, patientsCollection, refersCollection } from '@/firebaseConfig.js'; 
 import Swal from 'sweetalert2';
 
 import { ValidationObserver } from 'vee-validate'
@@ -143,6 +169,7 @@ import BSelectVal from '@/components/inputs/BSelectVal'
 
 import { attentionTypes, educationLevels, maritalStatuses, askedAttentions, patientTypes, askedTypes, problems, alcaldias, municipios } from '@/constants.js';
 import {generateKeywords} from '@/utils.js';
+import { mapState } from 'vuex';
 
 export default {
     components: {
@@ -205,15 +232,21 @@ export default {
             // errorsExist: false
         }
     },
+    computed: {
+        ...mapState(['currentUser']),
+        fullName() {
+            return `${this.patient.name} ${this.patient.lastName} ${this.patient.mothersName}`;
+        }
+    },
     methods: {
         signup() {
             this.performingRequest = true;
             let newPatient = this.patient;
             newPatient.registeredBy = this.$store.state.currentUser.uid;
             newPatient.status = 'Por referir';
-            newPatient.createdAt = fb.firebase.firestore.FieldValue.serverTimestamp();
+            newPatient.createdAt = firebase.firestore.FieldValue.serverTimestamp();
             newPatient.keywords = generateKeywords([this.patient.name, this.patient.lastName, this.patient.mothersName]);
-            fb.patientsCollection.add(newPatient)
+            patientsCollection.add(newPatient)
             .then(()=>{
                 Swal.fire({
                     title: 'Éxito',
@@ -234,7 +267,7 @@ export default {
             .finally(this.performingRequest=false);
         },
         getPatient() {
-            fb.patientsCollection.doc(this.patientId).get()
+            patientsCollection.doc(this.patientId).get()
             .then(res=>{
                 this.patient = res.data();
             })
@@ -243,7 +276,7 @@ export default {
         update() {
             this.performingRequest = true;
             this.patient.keywords = generateKeywords([this.patient.name, this.patient.lastName, this.patient.mothersName]);
-            fb.patientsCollection.doc(this.patientId).update(this.patient)
+            patientsCollection.doc(this.patientId).update(this.patient)
             .then(()=>{
                 Swal.fire({
                     title: 'Éxito',
@@ -272,6 +305,46 @@ export default {
                 this.patient.alcaldia = null;
             }
         },
+        showDel() {
+            Swal.fire({
+            title: '¿Estás seguro?',
+            text: "Esta acción no es reversible",
+            type: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Borrar',
+            showLoaderOnConfirm: true,
+            preConfirm: () => {
+                // return patientsCollection.doc(this.patientId).delete()
+                return refersCollection.where('patientId', '==', this.patientId).get()
+                .then(docs => {
+                    docs.forEach(doc => {
+                        doc.ref.delete();
+                    })
+                })
+                .then(() => {
+                    return patientsCollection.doc(this.patientId).delete()
+                })
+                .catch(error => {
+                    Swal.showValidationMessage(
+                    `Request failed: ${error}`
+                    )
+                })
+            },
+            allowOutsideClick: () => !Swal.isLoading()
+            }).then((result) => {
+                if (result.value) {
+                    Swal.fire({
+                        title: 'Éxito',
+                        text: 'El paciente eliminó exitosamente',
+                        type: "success",
+                        confirmButtonText: 'Aceptar',
+                        onClose: () => this.$router.push('/usuarios')
+                    })
+                }
+            })
+        }
     },
     mounted() {
         // this.patientId = this.$route.params.id;

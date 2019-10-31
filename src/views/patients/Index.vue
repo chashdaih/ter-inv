@@ -7,7 +7,7 @@
         <div class="field">
             <label class="label">Buscar usuario por nombres</label>
             <div class="control">
-                <input type="text" class="input" placeholder="Por favor, introduce al menos 3 letras" v-model="search" @keyup="getPatients(search)" />
+                <input type="text" class="input" placeholder="Por favor, introduce al menos 3 letras" v-model="search" @keyup="debounceGetPatients" />
             </div>
         </div>
         <b-table :data="patients" :loading="isSearching" style="min-height:200px">
@@ -69,11 +69,14 @@ export default {
         //     this.isModalVisible=false;
         //     this.selectedPatient = null;
         // },
-        ...mapActions(['getPatients']),
+        ...mapActions(['debounceGetPatients']),
         selectPatient(patient) {
             this.$store.commit('SET_SEL_PATIENT', {patient});
             this.$router.push(`/usuarios/${patient.id}/referenciar`);
-        }
+        },
+        // throttledMethod() {
+        //     const debounced = debounce(()=>this.getPatients(), 500);
+        // }
     },
     // mounted() {
     //     if (this.patients.length === 0) {

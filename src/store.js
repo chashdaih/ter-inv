@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-// const fb = require('./firebaseConfig.js')
 import { auth, usersCollection, db } from '@/firebaseConfig.js';
+import { debounce } from 'lodash-es';
 
 // import Referrals from '@/store/referrals.js';
 
@@ -72,6 +72,9 @@ export const store =  new Vuex.Store({
       })
       // .catch(err=>{console.log(err)})
     },
+    debounceGetPatients: debounce( ({dispatch}) => {
+      dispatch('getPatients');
+    }, 500),
     getPatients({ commit, state }) {
       if (state.patSearch.length > 2) {
         let patientsRef = state.db.collection('patients');
