@@ -10,6 +10,6 @@ const problems = ['Abuso_sexual', 'Ansiedad', 'Autismo', 'Autoestima', 'Autolesi
 const alcaldias = ['Álvaro_Obregón', 'Azcapotzalco', 'Benito_Juárez', 'Coyoacán', 'Cuajimalpa_de_Morelos', 'Cuauhtémoc', 'Gustavo_A_Madero', 'Iztacalco', 'Iztapalapa', 'Magdalena_Contreras', 'Miguel_Hidalgo', 'Milpa_Alta', 'Tláhuac', 'Tlalpan', 'Venustiano_Carranza'];
 const municipios = ['Huixquilucan', 'Naucalpan_de_Juárez', 'Atizapán_de_Zaragoza', 'Tlalnepantal_de_Baz', 'Cuautitlán', 'Tultitlán', 'Coacalco_de_Berriozábal', 'Ecatepec_de_Morelos', 'Nezahualcóyotl', 'La_Paz', 'Chalco'];
 
-const patientStatus = ['Por referir', 'Activo', 'Dado de alta', 'Dado de baja'];
+const patientStatus = ['Por referir', 'Activo', 'Dado de alta', 'Dado de baja', 'Desactivado'];
 
 export { attentionTypes, maritalStatuses, educationLevels, patientTypes, askedAttentions, askedTypes, problems, alcaldias, municipios, patientStatus };

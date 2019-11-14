@@ -20,9 +20,9 @@
         </b-field>
         <b-table :data="refers" :loading="loading">
             <template slot-scope="props">
-                <b-table-column label="Nombre del paciente">{{props.row.data.patientName}}</b-table-column>
-                <b-table-column label="Fecha de referenciación">{{props.row.data.timestamp.toDate().toISOString().split("T")[0]}}</b-table-column>
-                <b-table-column label="Estatus de la referenciación"><span class="tag">{{props.row.data.status}}</span></b-table-column>
+                <b-table-column sortable field="data.patientName" label="Nombre del paciente">{{props.row.data.patientName}}</b-table-column>
+                <b-table-column sortable field="data.timestamp" label="Fecha de referenciación">{{props.row.data.timestamp.toDate().toISOString().split("T")[0]}}</b-table-column>
+                <b-table-column sortable field="data.status" label="Estatus de la referenciación"><span class="tag">{{props.row.data.status}}</span></b-table-column>
                 <b-table-column label="Datos del paciente"><router-link class="button is-success" :to="'/usuarios/' + props.row.data.patientId">Ver</router-link></b-table-column>
                 <b-table-column label="Sesiones planeadas"><a @click.prevent="showModal(props.row.id)" class="button is-light" :class="{'is-loading':updating}">{{props.row.data.expectedAppts}}</a></b-table-column>
                 <b-table-column label="Sesiones registradas">{{regSessions(props.row.data.sessions)}}</b-table-column>
@@ -204,15 +204,16 @@ export default {
         updatePatientStatus() {
             this.loading = true;
             const timestamp = Date.now().toString();
-            let statusObject = {
+            let statusUpdate = {
                 status: this.newStatus,
                 statusHistory: {},
             };
-            statusObject.statusHistory[timestamp] = {
+            statusUpdate.statusHistory[timestamp] = {
+                status: this.newStatus,
                 changerId: this.currentUser.uid,
                 comments: this.statusComments,
             };
-            patientsCollection.doc(this.selectedPatientId).update(statusObject)
+            patientsCollection.doc(this.selectedPatientId).update(statusUpdate)
             .then(() => {
                 return refersCollection.doc(this.selectedId).update({status: 'Terminado'})
             })

@@ -17,9 +17,9 @@
         <a v-if="userProfile.userType == 3" @click.prevent="openModal" class="button is-success">Registrar sesión</a>
         <b-table v-if="ref" :loading="loading" :data="refArray">
             <template slot-scope="props">
-                <b-table-column label="Fecha" sortable>{{props.row.data.date}}</b-table-column>
-                <b-table-column label="Estatus" sortable>{{props.row.data.status}}</b-table-column>
-                <b-table-column label="Comentarios" sortable>{{props.row.data.comments}}</b-table-column>
+                <b-table-column field="data.date" label="Fecha" sortable>{{props.row.data.date}}</b-table-column>
+                <b-table-column field="data.status" label="Estatus" sortable>{{props.row.data.status}}</b-table-column>
+                <b-table-column field="data.comments" label="Comentarios" sortable>{{props.row.data.comments}}</b-table-column>
                 <!-- <b-table-column label="Editar"><button class="button is-info">Editar</button></b-table-column> -->
                 <b-table-column v-if="userProfile.userType == 3" label="Borrar registro" ><button @click="deleteSession(props.row.id)" class="button is-danger">Borrar</button></b-table-column>
             </template>

@@ -247,13 +247,13 @@ export default {
             newPatient.createdAt = firebase.firestore.FieldValue.serverTimestamp();
             newPatient.keywords = generateKeywords([this.patient.name, this.patient.lastName, this.patient.mothersName]);
             patientsCollection.add(newPatient)
-            .then(()=>{
+            .then(docRef =>{
                 Swal.fire({
                     title: 'Éxito',
                     text: 'El paciente se registró exitosamente',
                     type: "success",
                     confirmButtonText: 'Aceptar',
-                    onClose: () => this.$router.push('/usuarios')
+                    onClose: () => this.$router.push(`/usuarios/${docRef.id}/referenciar`)
                 });
             })
             .catch(err =>{

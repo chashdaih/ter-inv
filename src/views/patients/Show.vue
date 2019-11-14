@@ -18,6 +18,10 @@
                     <td>{{fullName}}</td>
                 </tr>
                 <tr>
+                    <th>Estatus</th>
+                    <td>{{patient.status}}</td>
+                </tr>
+                <tr>
                     <th>Edad</th>
                     <td>{{age}}</td>
                 </tr>

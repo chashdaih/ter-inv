@@ -21,6 +21,7 @@ export const store =  new Vuex.Store({
     db,
     // patients
     patSearch: '',
+    refStatus: 'Por referir',
     patients: [],
     selectedPatient: null,
     unsubscribeFromPats: null, // todo ¿donde debe ir esto?
@@ -40,6 +41,9 @@ export const store =  new Vuex.Store({
     // patients
     SET_PAT_SEARCH(state, searchValue ) {
       state.patSearch = searchValue;
+    },
+    SET_REF_STATUS(state, val ) {
+      state.refStatus = val;
     },
     SET_PATIENTS (state, { patient }) {
       const data = patient.data();
@@ -76,7 +80,15 @@ export const store =  new Vuex.Store({
       dispatch('getPatients');
     }, 500),
     getPatients({ commit, state }) {
-      if (state.patSearch.length > 2) {
+      if (state.refStatus == 'Por referir') {
+        let patientsRef = state.db.collection('patients');
+        let unsub = patientsRef.where('status', '==', state.refStatus).limit(20).onSnapshot(snapshot => {
+          commit('CLEAR_PATIENTS');
+          snapshot.forEach(patient => commit('SET_PATIENTS', { patient }))
+        });
+        commit('SET_UNSUB_PATS', unsub);
+
+      } else if (state.patSearch.length > 2) {
         let patientsRef = state.db.collection('patients');
         let unsub = patientsRef.where('keywords', 'array-contains', state.patSearch.toLowerCase()).orderBy('createdAt', 'desc').limit(10).onSnapshot(snapshot => {
           commit('CLEAR_PATIENTS');

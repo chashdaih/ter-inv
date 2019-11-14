@@ -13,10 +13,10 @@
         <!-- <a class="button is-success" @click.prevent="">Hacer nueva referenciación</a> -->
         <b-table :loading="loading" :data="referals">
             <template slot-scope="props">
-                <b-table-column label="Fecha de referenciación">{{props.row.data.timestamp.toDate().toISOString().split("T")[0]}}</b-table-column>
-                <b-table-column label="Nombre del terapeuta"><router-link class="button is-link" :to="'/terapeutas/' + props.row.data.therapistId">{{props.row.data.therapistName||props.row.data.therapistsName}}</router-link></b-table-column>
-                <b-table-column label="Referido por"><router-link class="button is-success" :to="'/supervisores/' + props.row.data.referrerId">{{props.row.data.referrerName}}</router-link></b-table-column>
-                <b-table-column label="Estatus de la referencia"><span class="tag">{{props.row.data.status}}</span></b-table-column>
+                <b-table-column sortable field="data.timestamp" label="Fecha de referenciación">{{props.row.data.timestamp.toDate().toISOString().split("T")[0]}}</b-table-column>
+                <b-table-column sortable field="data.therapistName" label="Nombre del terapeuta"><router-link class="button is-link" :to="'/terapeutas/' + props.row.data.therapistId">{{props.row.data.therapistName||props.row.data.therapistsName}}</router-link></b-table-column>
+                <b-table-column sortable field="data.referrerName" label="Referido por"><router-link class="button is-success" :to="'/supervisores/' + props.row.data.referrerId">{{props.row.data.referrerName}}</router-link></b-table-column>
+                <b-table-column sortable field="data.status" label="Estatus de la referencia"><span class="tag">{{props.row.data.status}}</span></b-table-column>
                 <b-table-column label="Número de sesiones esperadas">{{props.row.data.expectedAppts}}</b-table-column>
                 <b-table-column label="Número de sesiones transcurridas">{{props.row.data.sessions ? Object.keys(props.row.data.sessions).length : 0}}</b-table-column>
                 <b-table-column label="Detalle de sesiones"><router-link :to="'/usuarios/' + patientId + '/referencias/' + props.row.id" class="button is-info">Ir</router-link></b-table-column>

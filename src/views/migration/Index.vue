@@ -3,8 +3,8 @@
         <h1 class="title">Migrar</h1>
         <!-- <label v-if="therapists.length > 0" class="label">Se tienen</label> -->
         <!-- <a @click.prevent="migrar" class="button" :class="{'is-loading': loading}">Migrar terapeutas</a> -->
-        <!-- <a @click.prevent="migrarPacientes" class="button" :class="{'is-loading': loading}">Migrar pacientes</a> -->
-        <a @click.prevent="migrarRefers" class="button" :class="{'is-loading': loading}">Migrar referencias</a>
+        <a @click.prevent="migrarPacientes" class="button" :class="{'is-loading': loading}">Migrar pacientes</a>
+        <!-- <a @click.prevent="migrarRefers" class="button" :class="{'is-loading': loading}">Migrar referencias</a> -->
     </div>
 </template>
 
@@ -45,7 +45,7 @@ export default {
         },
         fetchPatients() {
             // axios.get('./patients.json')
-            axios.get('./nuevosPac.json')
+            axios.get('./allPatients.json')
             .then(res=> {
                 patients = res.data;
             });
@@ -163,9 +163,14 @@ export default {
                 const lastName = paciente.a_paterno;
                 const mothersName = paciente.a_materno;
 
-                let date = new Date();
-                date.setFullYear(date.getFullYear() - parseInt(paciente.edad));
-                const birthdate = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+                let birthdate = '';
+                if (paciente.fecha_nac) {
+                    birthdate = paciente.fecha_nac;
+                } else {
+                    let date = new Date();
+                    date.setFullYear(date.getFullYear() - parseInt(paciente.edad));
+                    birthdate = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+                }
                 const phoneHome = paciente.tel_casa;
                 const phoneCell = paciente.tel_celular;
                 const phoneWork = paciente.tel_laboral;
@@ -191,8 +196,13 @@ export default {
                 const askedType = 0;
                 const reason = "";
                 let symptoms = {};
-                symptoms[paciente.problema.split(' ').join('_')] = true;
-                const status = newStatus[paciente.estatus];
+                if (paciente.problema) {
+                    symptoms[paciente.problema.split(' ').join('_')] = true;
+                }
+                let status = newStatus[0];
+                if (paciente.estatus) {
+                    status = newStatus[paciente.estatus];
+                }
                 const registeredBy = "";
                 const createdAt = paciente.fecha;
                 const keywords = generateKeywords([name, lastName, mothersName]);
@@ -240,8 +250,8 @@ export default {
     mounted() {
         // this.fetchTherapists();
         // this.fetchProblems();
-        // this.fetchPatients();
-        this.fetchRefers();
+        this.fetchPatients();
+        // this.fetchRefers();
     }
 }
 </script>
