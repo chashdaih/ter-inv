@@ -6,15 +6,22 @@
         <br>
         <b-field>
             <b-radio-button @input="debounceGetPatients" native-value="Por referir" v-model="statusFilter" type="is-link">Por referir</b-radio-button>
-            <b-radio-button @input="debounceGetPatients" native-value="Por nombre" v-model="statusFilter" type="is-link">Buscar por nombre</b-radio-button>
+            <b-radio-button @input="debounceGetPatients" native-value="Por nombre" v-model="statusFilter" type="is-link">Buscar por nombre y estatus</b-radio-button>
         </b-field>
         <div v-if="statusFilter != 'Por referir'" class="field">
-            <label class="label">Buscar usuario por nombres</label>
+            <label class="label">Filtrar por nombres</label>
             <div class="control">
                 <input type="text" class="input" placeholder="Por favor, introduce al menos 3 letras" v-model="search" @keyup="debounceGetPatients" />
             </div>
+            <br>
+            <b-field title="Especificar estatus">
+                <b-radio-button @input="debounceGetPatients" :native-value="null" v-model="moreStatusFilter" type="is-info">Todos los estatus</b-radio-button>
+                <b-radio-button @input="debounceGetPatients" native-value="Referido" v-model="moreStatusFilter" type="is-info">Referenciado</b-radio-button>
+                <b-radio-button @input="debounceGetPatients" native-value="Alta" v-model="moreStatusFilter" type="is-info">Dado de alta</b-radio-button>
+                <b-radio-button @input="debounceGetPatients" native-value="Baja" v-model="moreStatusFilter" type="is-info">Dado de baja</b-radio-button>
+            </b-field>
         </div>
-        <b-table :data="patients" :loading="isSearching" style="min-height:200px">
+        <b-table :data="patients" :loading="loadingPatients" style="min-height:200px">
             <template slot-scope="props">
                 <b-table-column field="data.name" sortable label="Nombre" >{{props.row.data.name}}</b-table-column>
                 <b-table-column field="data.lastName" sortable label="Apellido paterno" >{{props.row.data.lastName}}</b-table-column>
@@ -62,14 +69,13 @@ import Swal from 'sweetalert2';
 export default {
     data() {
         return {
-            isSearching: false,
             dModalVis: false,
             patToDeaId: null,
             deactivating: false
         }
     },
     computed: {
-        ...mapState(['patients', 'currentUser']),
+        ...mapState(['patients', 'currentUser', 'unsubscribeFromPats', 'loadingPatients']),
         search: {
             set(val) {
                 this.$store.commit('SET_PAT_SEARCH', val);
@@ -81,6 +87,10 @@ export default {
         statusFilter: {
             set(val) { this.$store.commit('SET_REF_STATUS', val); },
             get() { return this.$store.state.refStatus; }
+        },
+        moreStatusFilter: {
+            set(val) { this.$store.commit('SET_MORE_STATUS', val); },
+            get() { return this.$store.state.moreStatus; }
         }
     },
     methods: {
@@ -119,7 +129,7 @@ export default {
         }
     },
     mounted() {
-        if (this.statusFilter == 'Por referir') {
+        if  (!this.unsubscribeFromPats) {
             this.debounceGetPatients();
         }
     }

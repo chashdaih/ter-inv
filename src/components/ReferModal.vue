@@ -142,6 +142,7 @@ export default {
                     timestamp: fb.firebase.firestore.FieldValue.serverTimestamp(),
                     expectedAppts: 'Sin especificar',
                     status: 'Activo',
+                    patientStatus: 'En tratamiento',
                 });
             })
             .then(() =>{

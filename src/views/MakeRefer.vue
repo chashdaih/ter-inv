@@ -198,6 +198,7 @@ export default {
                     therapistName,
                     patientId: this.selectedPatient.id,
                     patientName: this.fullName,
+                    patientStatus: 'En tratamiento',
                     referrerId: this.currentUser.uid,
                     referrerName: `${this.userProfile.name} ${this.userProfile.lastName} ${this.userProfile.mothersName}`,
                     timestamp: firebase.firestore.FieldValue.serverTimestamp(),

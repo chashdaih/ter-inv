@@ -11,7 +11,7 @@
             :type="{ 'is-danger': errors[0], 'is-success': valid }"
             :message="errors"
         >
-            <b-input v-model="innerValue" v-bind="$attrs"></b-input>
+            <b-input v-model.trim="innerValue" v-bind="$attrs"></b-input>
         </b-field>
     </ValidationProvider>
 </template>
