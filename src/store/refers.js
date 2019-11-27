@@ -54,22 +54,6 @@ export default {
             commit(loadString, true);
             commit(asString, [])
             try {
-                // let therRefers = await refersCollection.where('therapistId', '==', state.therapistId).where('status', '==', refOption).get();
-                // let temp = [];
-                // for (let doc of therRefers.docs) {
-                //     if (!doc.data().patientStatus) {
-                //         let updatedStatus = 'En tratamiento'
-                //         if (refOption != 'Activo') {
-                //             let patient = await patientsCollection.doc(doc.data().patientId).get();
-                //             updatedStatus = patient.data().status;
-                //         }
-                //         await refersCollection.doc(doc.id).update({ patientStatus: updatedStatus });
-                //         doc.data().patientStatus = updatedStatus;
-                //     } 
-                //     temp.push({ id: doc.id,  data: doc.data() })
-                // }
-                // commit(asString, temp);
-                // commit(unsubString, 'paraOnSnap');
                 await new Promise(resolve => {
                     let resolveOnce = (snap) => {
                       resolveOnce = () => null;
@@ -81,15 +65,6 @@ export default {
                     .onSnapshot(snapshot => {
                         let temp = [];
                         for (let doc of snapshot.docs) {
-                            // if (!doc.data().patientStatus) { 
-                            //     let updatedStatus = 'En tratamiento'
-                            //     if (refOption != 'Activo') {
-                            //         let patient = await patientsCollection.doc(doc.data().patientId).get();
-                            //         updatedStatus = patient.data().status;
-                            //     }
-                            //     await refersCollection.doc(doc.id).update({ patientStatus: updatedStatus });
-                            //     doc.data().patientStatus = updatedStatus;
-                            // } 
                             temp.push({ id: doc.id,  data: doc.data() })
                         }
                         resolveOnce(commit(asString, temp));

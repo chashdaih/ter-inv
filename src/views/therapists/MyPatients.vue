@@ -118,7 +118,6 @@ export default {
     data() {
         return {
             loading: false,
-            // refers: [],
             // update planed session number
             updating:false,
             isModalVisible: false,
@@ -163,7 +162,7 @@ export default {
         }
     },
     methods: {
-        ...mapMutations('refers', { setTher: 'SET_THER' }),
+        ...mapMutations('refers', { setTher: 'SET_THER', setUnA: 'SET_UNSUB_ACT', setUnE: 'SET_UNSUB_END' }),
         ...mapActions('refers', ['getRefersOption']),
         getRefers(option) {
             if (option == this.refStatuses[0]) {
@@ -192,7 +191,6 @@ export default {
         showModal(refer) {
             this.isModalVisible = true;
             this.selectedId = refer.id;
-            console.log(refer);
             this.referStatus = refer.data.status;
         },
         clearModal() {
@@ -201,13 +199,11 @@ export default {
             this.referStatus = null;
         },
         updateExpected() {
-            console.log('upExp');
             this.loading = true;
             refersCollection.doc(this.selectedId).update({
                 expectedAppts: this.newValue
             })
             .then(() => {
-                // this.getMyRefs();
                 this.getRefersOption(this.statusFilter);
                 this.clearModal();
             })
@@ -221,14 +217,14 @@ export default {
             })
             .finally(()=>this.loading=false);
         },
-        getTherapist() {
-            usersCollection.doc(this.therapistId).get()
-            .then(res => this.therapist = res.data())
-            .catch(function(error) {
-                console.log("Error getting documents: ", error);
-            })
-            .finally(this.loading=false);
-        },
+        // getTherapist() {
+        //     usersCollection.doc(this.therapistId).get()
+        //     .then(res => this.therapist = res.data())
+        //     .catch(function(error) {
+        //         console.log("Error getting documents: ", error);
+        //     })
+        //     .finally(this.loading=false);
+        // },
         showStatusModal(refId, patientId) {
             this.selectedId = refId;
             this.selectedPatientId = patientId;
@@ -282,10 +278,21 @@ export default {
         },
     },
     mounted() {
+        console.log('mounted')
         if (!this.therapistId) {
             this.therapistId = this.currentUser.uid;
         }
-        this.setTher(this.therapistId);
+        if (this.therapistId != this.refers.therapistId) {
+            if (this.refers.unsubAct) {
+                this.refers.unsubAct();
+                this.setUnA(null);
+            }
+            if (this.refers.unsubEnd) {
+                this.refers.unsubEnd();
+                this.setUnE(null);
+            }
+            this.setTher(this.therapistId);
+        }
         this.getRefers(this.statusFilter);
     }
 }
