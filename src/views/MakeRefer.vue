@@ -82,7 +82,7 @@
                         <b-table-column field="data.name" label="Nombre" sortable>{{ props.row.data.name }}</b-table-column>
                         <b-table-column field="data.lastName" label="Apellido paterno" sortable>{{ props.row.data.lastName }}</b-table-column>
                         <b-table-column field="data.mothersName" label="Apellido materno" sortable>{{ props.row.data.mothersName }}</b-table-column>
-                        <b-table-column label="Usuarios/Total">{{props.row.data.activePatients}}/{{props.row.data.maxCap}}</b-table-column>
+                        <b-table-column label="Usuarios/Total">{{props.row.data.activePatients || 0}}/{{props.row.data.maxCap}}</b-table-column>
                         <b-table-column label="Teléfono">{{props.row.data.phone1}}<template v-if="props.row.data.phone2"> / {{props.row.data.phone2}}</template></b-table-column>
                         <b-table-column label="Dirección">{{props.row.data.officeAddress}}</b-table-column>
                         <b-table-column label="Horarios">{{props.row.data.officeHours}}</b-table-column>
@@ -171,7 +171,13 @@ export default {
                 const docs = await query.get();
                 docs.forEach(doc => {
                     const data = doc.data();
-                    if (data.maxCap > data.activePatients && data.disabled != true) {
+                    let activePatients = data.activePatients;
+                    if (!activePatients) {
+                        activePatients = 0;
+                    } else {
+                        activePatients = parseInt(activePatients);
+                    }
+                    if (data.maxCap > activePatients && data.disabled != true) {
                         this.therapists.push({ id: doc.id,  data });
                     }
                 });

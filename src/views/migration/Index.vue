@@ -245,13 +245,27 @@ export default {
                 }
             }
             this.loading = false;
+        },
+        async registrarUno() {
+        
+        let createUser = fb.firebase.functions().httpsCallable('createNewUser');
+
+        const email = "maybadtzmx@yahoo.com";
+        const password = "M_glez5645654";
+        const uid = "5645654";
+
+        const newUser = { email, password, uid };
+        const res = await createUser(newUser);
+        console.log('usuario creado, ' + res.data.uid);
+
         }
     },
     mounted() {
         // this.fetchTherapists();
         // this.fetchProblems();
-        this.fetchPatients();
+        // this.fetchPatients();
         // this.fetchRefers();
+        // this.registrarUno();
     }
 }
 </script>

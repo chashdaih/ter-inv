@@ -34,9 +34,8 @@
                 <b-table-column label="Sesiones planeadas"><a @click.prevent="showModal(props.row)" class="button is-light" :class="{'is-loading':updating}">{{props.row.data.expectedAppts}}</a></b-table-column>
                 <b-table-column label="Sesiones registradas">{{regSessions(props.row.data.sessions)}}</b-table-column>
                 <b-table-column label="Listado de sesiones"><router-link class="button is-info" :to="'/usuarios/' + props.row.data.patientId + '/referencias/' + props.row.id">Ir</router-link></b-table-column>
-                <b-table-column v-if="userProfile.userType > 1" label="Cambiar estatus de usuario">
-                    <p v-if="userProfile.userType == 3 && statusFilter == refStatuses[1]" >-</p>
-                    <a v-else @click.prevent="showStatusModal(props.row.id, props.row.data.patientId)" class="button is-link" :class="{'is-loading':updating}">Cambiar estatus</a>
+                <b-table-column label="Cambiar estatus de usuario">
+                    <a @click.prevent="showStatusModal(props.row.id, props.row.data.patientId)" class="button is-link" :class="{'is-loading':updating}">Cambiar estatus</a>
                 </b-table-column>
             </template>
             <template slot="empty">
@@ -204,7 +203,7 @@ export default {
                 expectedAppts: this.newValue
             })
             .then(() => {
-                this.getRefersOption(this.statusFilter);
+                // this.getRefersOption(this.statusFilter);
                 this.clearModal();
             })
             .catch(err =>{
@@ -234,6 +233,7 @@ export default {
             this.selectedId = null;
             this.selectedPatientId = null;
             this.isStatusModal = false;
+            this.statusComments = null;
         },
         updatePatientStatus() {
             this.loading = true;
@@ -263,7 +263,7 @@ export default {
                 return usersCollection.doc(this.therapistId).update({activePatients: firebase.firestore.FieldValue.increment(num)})
             })
             .then(() => {
-                this.getRefersOption(this.statusFilter);
+                // this.getRefersOption(this.statusFilter);
                 this.clearStatusModal();
             })
             .catch(err =>{
@@ -278,7 +278,6 @@ export default {
         },
     },
     mounted() {
-        console.log('mounted')
         if (!this.therapistId) {
             this.therapistId = this.currentUser.uid;
         }

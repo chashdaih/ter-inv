@@ -75,7 +75,7 @@ export default {
                     let updatedStatus = 'En tratamiento';
                     if (!doc.data.patientStatus) {
                         if (refOption != 'Activo') {
-                            let patient = await patientsCollection.doc(doc.data().patientId).get();
+                            let patient = await patientsCollection.doc(doc.data.patientId).get();
                             updatedStatus = patient.data().status;
                         }
                         await refersCollection.doc(doc.id).update({ patientStatus: updatedStatus });
