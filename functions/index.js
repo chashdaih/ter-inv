@@ -88,6 +88,8 @@ exports.sendNewRefEmail = functions.https.onCall(async data => {
 
 exports.createNewUser = functions.https.onCall(data => {
 
+    console.log('-------------')
+
     const email = data.email;
     const password = data.password
     const uid = data.uid;
@@ -97,7 +99,7 @@ exports.createNewUser = functions.https.onCall(data => {
         return {uid: user.uid};
     })
     .catch(error => {
-        throw new functions.https.HttpsError(error);
+        throw new functions.https.HttpsError("invalid-argument", error.message);
     });
     
 });
@@ -108,7 +110,7 @@ exports.changePassword = functions.https.onCall(data => {
     return admin.auth().updateUser(uid, { password })
     .then(userRecord => userRecord.toJSON())
     .catch(error => {
-        throw new functions.https.HttpsError(error);
+        throw new functions.https.HttpsError("invalid-argument", error.message);
     });
 })
 
@@ -119,7 +121,7 @@ exports.deleteUser = functions.https.onCall(async data => {
         await admin.auth().deleteUser(uid);
         return {ok:200}
     } catch (error) {
-        throw new functions.https.HttpsError(error);
+        throw new functions.https.HttpsError("invalid-argument", error.message);
     }
 
 })

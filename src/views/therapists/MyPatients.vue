@@ -12,7 +12,7 @@
             <h1 class="title">Usuarios referidos a {{fullName}}</h1>
         </template>
         <h1 v-else class="title">Usuarios referenciados</h1>
-        <h2 class="subtitle">Filtar por estatus de la referencia</h2>
+        <h2 class="subtitle">Filtrar por estatus de la referencia</h2>
         <b-field>
             <b-radio-button @input="getRefers" v-model="statusFilter"  :native-value="refStatuses[0]" >{{refStatuses[0]}}</b-radio-button>
             <b-radio-button @input="getRefers" v-model="statusFilter"  :native-value="refStatuses[1]" >{{refStatuses[1]}}</b-radio-button>
@@ -216,14 +216,12 @@ export default {
             })
             .finally(()=>this.loading=false);
         },
-        // getTherapist() {
-        //     usersCollection.doc(this.therapistId).get()
-        //     .then(res => this.therapist = res.data())
-        //     .catch(function(error) {
-        //         console.log("Error getting documents: ", error);
-        //     })
-        //     .finally(this.loading=false);
-        // },
+        getTherapist() {
+            usersCollection.doc(this.therapistId).get()
+            .then(res => this.therapist = res.data())
+            .catch(error => console.error(error))
+            // .finally(this.loading=false);
+        },
         showStatusModal(refId, patientId) {
             this.selectedId = refId;
             this.selectedPatientId = patientId;
@@ -280,6 +278,8 @@ export default {
     mounted() {
         if (!this.therapistId) {
             this.therapistId = this.currentUser.uid;
+        } else {
+            this.getTherapist();
         }
         if (this.therapistId != this.refers.therapistId) {
             if (this.refers.unsubAct) {

@@ -32,13 +32,12 @@
                 </div>
                 <BInputVal rules="required" type="text" label="Dirección del consultorio" v-model="therapist.officeAddress" placeholder="Dirección del consultorio" />
                 <BSelectVal rules="required" label="Estado donde se encuentra el consultorio" v-model="therapist.estado" @change="changeAlMun">
-                    <option value="CDMX">CDMX</option>
-                    <option value="edoMex">Estado de México</option>
+                    <option v-for="(zona, i) in zonas" :key="i"  :value="zona.value">{{zona.text}}</option>
                 </BSelectVal>
                 <BSelectVal v-if="therapist.estado=='CDMX'" rules="required" label="Alcaldía" v-model="therapist.officeAlcaldia">
                     <option v-for="(al, idx) in alcaldias" :key="idx" :value="al">{{al}}</option>
                 </BSelectVal>
-                <BSelectVal v-else rules="required" label="Municipio" v-model="therapist.officeMunicipio">
+                <BSelectVal v-else-if="therapist.estado=='edoMex'" rules="required" label="Municipio" v-model="therapist.officeMunicipio">
                     <option v-for="(mun, idx) in municipios" :key="idx" :value="mun">{{mun}}</option>
                 </BSelectVal>
                 <div class="field">
@@ -113,7 +112,7 @@
 
 <script>
 import Swal from 'sweetalert2';
-import { problems, alcaldias, municipios, patientTypes, askedAttentions, askedTypes } from '@/constants.js';
+import { problems, alcaldias, municipios, patientTypes, askedAttentions, askedTypes, zonas } from '@/constants.js';
 import ToggleStatus from '@/components/ToggleStatus.vue';
 import { firebase, usersCollection } from '@/firebaseConfig.js';
 import {generateKeywords} from '@/utils.js';
@@ -140,6 +139,7 @@ export default {
         patientTypes: { type: Array, default: () =>(patientTypes) },
         askedAttentions: { type: Array, default: () =>(askedAttentions) },
         askedTypes: { type: Array, default: () =>(askedTypes) },
+        zonas: { type: Array, default: () => (zonas), },
     },
     data() {
         return {
@@ -197,10 +197,10 @@ export default {
         },
         changeAlMun() {
             console.log("cah")
-            if (this.therapist.estado != "CDMX") { // todo revisar misterio
+            if (this.therapist.estado == "edoMex") { // todo revisar misterio
                 this.therapist.officeMunicipio = null;
                 this.therapist.officeAlcaldia = alcaldias[0];
-            } else {
+            } else if (this.therapist.estado == 'CDMX') {
                 this.therapist.officeMunicipio = municipios[0];
                 this.therapist.officeAlcaldia = null;
             }

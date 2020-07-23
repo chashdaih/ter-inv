@@ -25,7 +25,6 @@
                         <b-table-column field="data.name" label="Nombre" sortable>{{ props.row.data.name }}</b-table-column>
                         <b-table-column field="data.lastName" label="Apellido paterno" sortable>{{ props.row.data.lastName }}</b-table-column>
                         <b-table-column field="data.mothersName" label="Apellido materno" sortable>{{ props.row.data.mothersName }}</b-table-column>
-                        <!-- <b-table-column label="Alcaldía/Municipio" sortable>{{ props.row.data.estado == "CDMX" ? props.row.data.officeAlcaldia : props.row.data.officeMunicipio }}</b-table-column> -->
                         <b-table-column label="Usuarios/Total">{{props.row.data.activePatients}}/{{props.row.data.maxCap}}</b-table-column>
                         <b-table-column label="Teléfono">{{props.row.data.phone1}}<template v-if="props.row.data.phone2"> / {{props.row.data.phone2}}</template></b-table-column>
                         <b-table-column label="Dirección">{{props.row.data.officeAddress}}</b-table-column>
@@ -88,8 +87,10 @@ export default {
         muni(){
             if (this.patient.data.estado == "CDMX") {
                 return `la alcaldía ${this.patient.data.alcaldia}`
-            } else {
+            } else if (this.patient.data.estado == 'edoMex') {
                 return `el municipio ${this.patient.data.municipio}`
+            } else {
+                return '';
             }
         },
         ...mapState(['currentUser', 'userProfile']),

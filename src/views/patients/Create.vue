@@ -63,13 +63,12 @@
                     </span>
                 </a>
                 <BSelectVal rules="required" label="Estado" v-model="patient.estado" @change="changeAlMun">
-                    <option value="CDMX">CDMX</option>
-                    <option value="edoMex">Estado de México</option>
+                    <option v-for="(zona, i) in zonas" :key="i"  :value="zona.value">{{zona.text}}</option>
                 </BSelectVal>
                 <BSelectVal v-if="patient.estado=='CDMX'" rules="required" label="Alcaldía" v-model="patient.alcaldia">
                     <option v-for="(al, idx) in alcaldias" :key="idx" :value="al">{{al}}</option>
                 </BSelectVal>
-                <BSelectVal v-else rules="required" label="Municipio" v-model="patient.municipio">
+                <BSelectVal v-else-if="patient.estado=='edoMex'" rules="required" label="Municipio" v-model="patient.municipio">
                     <option v-for="(mun, idx) in municipios" :key="idx" :value="mun">{{mun}}</option>
                 </BSelectVal>
                 <div class="field">
@@ -167,7 +166,7 @@ import { ValidationObserver } from 'vee-validate'
 import BInputVal from '@/components/inputs/BInputVal'
 import BSelectVal from '@/components/inputs/BSelectVal'
 
-import { attentionTypes, educationLevels, maritalStatuses, askedAttentions, patientTypes, askedTypes, problems, alcaldias, municipios } from '@/constants.js';
+import { attentionTypes, educationLevels, maritalStatuses, askedAttentions, patientTypes, askedTypes, problems, alcaldias, municipios, zonas } from '@/constants.js';
 import {generateKeywords} from '@/utils.js';
 import { mapState } from 'vuex';
 
@@ -196,6 +195,7 @@ export default {
         patientTypes: { type: Array, default: () => (patientTypes) },
         askedTypes: { type: Array, default: () => (askedTypes) },
         educationLevels: { type: Array, default: () => (educationLevels) },
+        zonas: { type: Array, default: () => (zonas), },
     },
     data() {
         return {
@@ -297,10 +297,10 @@ export default {
             .finally(()=>this.performingRequest=false)
         },
         changeAlMun() {
-            if (this.patient.estado != "CDMX") {
+            if (this.patient.estado == "edoMex") {
                 this.patient.municipio = null;
                 this.patient.alcaldia = alcaldias[0];
-            } else {
+            } else if (this.patient.estado == 'CDMX') {
                 this.patient.municipio = municipios[0];
                 this.patient.alcaldia = null;
             }

@@ -128,14 +128,16 @@ export default {
             let sessionUpdate = {};
             sessionUpdate[`sessions.${timestamp}`] = this.newSession;
             fb.refersCollection.doc(this.refId).update(sessionUpdate)
-            .then(()=>{
+            .then(() => fb.refersCollection.doc(this.refId).get())
+            .then(res => {
                 // todo snapshot auto update, vuex
-                if (this.ref.sessions) {
-                    this.ref.sessions[timestamp]= this.newSession;
-                } else {
-                    this.ref['sessions'] = this.newSession;
-                }
-                this.ref = {...this.ref};
+                // if (this.ref.sessions) {
+                //     this.ref.sessions[timestamp]= this.newSession;
+                // } else {
+                //     this.ref['sessions'] = this.newSession;
+                // }
+                // this.ref = {...this.ref};
+                this.ref = res.data();
                 this.clearModal();
             })
             .catch(err =>{

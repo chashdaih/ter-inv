@@ -53,8 +53,7 @@
                         <label class="label">Elige un estado</label>
                         <div class="select">
                             <select v-model="estado" @change="getTherapists">
-                                <option value="CDMX">CDMX</option>
-                                <option value="edoMex">Estado de México</option>
+                                <option v-for="(zona, i) in zonas" :key="i"  :value="zona.value">{{zona.text}}</option>
                             </select>
                         </div>
                     </div>
@@ -66,7 +65,7 @@
                             </select>
                         </div>
                     </div>
-                    <div v-else class="field">
+                    <div v-else-if="estado=='edoMex'" class="field">
                         <label class="label">Elige un municipio</label>
                         <div class="select">
                             <select v-model="municipio" @change="getTherapists">
@@ -74,29 +73,39 @@
                             </select>
                         </div>
                     </div>
-
+                    <div class="field">
+                        <label class="label">Orientación terapéutica</label>
+                        <div class="select">
+                            <select v-model="orientation" @change="getTherapists">
+                                <option v-for="ori in orientations" :key="ori" :value="ori">{{ori}}</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
             </div>
             <b-table :data="therapists" :loading="gettingTherapists" >
-                    <template slot-scope="props">
-                        <b-table-column field="data.name" label="Nombre" sortable>{{ props.row.data.name }}</b-table-column>
-                        <b-table-column field="data.lastName" label="Apellido paterno" sortable>{{ props.row.data.lastName }}</b-table-column>
-                        <b-table-column field="data.mothersName" label="Apellido materno" sortable>{{ props.row.data.mothersName }}</b-table-column>
-                        <b-table-column label="Usuarios/Total">{{props.row.data.activePatients || 0}}/{{props.row.data.maxCap}}</b-table-column>
-                        <b-table-column label="Teléfono">{{props.row.data.phone1}}<template v-if="props.row.data.phone2"> / {{props.row.data.phone2}}</template></b-table-column>
-                        <b-table-column label="Dirección">{{props.row.data.officeAddress}}</b-table-column>
-                        <b-table-column label="Horarios">{{props.row.data.officeHours}}</b-table-column>
-                        <b-table-column label="Especificaciones">{{props.row.data.specs}}</b-table-column>
-                        <b-table-column label="Referenciar"><a @click.prevent="refer(props.row)" class="button is-link">Referenciar</a></b-table-column>
-                    </template>
-                    <template v-if="!gettingTherapists" slot="empty">
-                        <section class="section">
-                            <div class="content has-text-grey has-text-centered">
-                                <p class="has-text-weight-bold">{{tableText}}</p>
-                            </div>
-                        </section>
-                    </template>
-                </b-table>
+                <template slot-scope="props">
+                    <b-table-column field="data.orientation" label="Orientación terapéutica">
+                        {{ Object.keys(props.row.data.orientation).reduce((acc, curr) => acc + `${curr} `, '') }}
+                    </b-table-column>
+                    <b-table-column field="data.name" label="Nombre" sortable>{{ props.row.data.name }}</b-table-column>
+                    <b-table-column field="data.lastName" label="Apellido paterno" sortable>{{ props.row.data.lastName }}</b-table-column>
+                    <b-table-column field="data.mothersName" label="Apellido materno" sortable>{{ props.row.data.mothersName }}</b-table-column>
+                    <b-table-column label="Usuarios/Total">{{props.row.data.activePatients || 0}}/{{props.row.data.maxCap}}</b-table-column>
+                    <b-table-column label="Teléfono">{{props.row.data.phone1}}<template v-if="props.row.data.phone2"> / {{props.row.data.phone2}}</template></b-table-column>
+                    <b-table-column label="Dirección">{{props.row.data.officeAddress}}</b-table-column>
+                    <b-table-column label="Horarios">{{props.row.data.officeHours}}</b-table-column>
+                    <b-table-column label="Especificaciones">{{props.row.data.specs}}</b-table-column>
+                    <b-table-column label="Referenciar"><a @click.prevent="refer(props.row)" class="button is-link">Referenciar</a></b-table-column>
+                </template>
+                <template v-if="!gettingTherapists" slot="empty">
+                    <section class="section">
+                        <div class="content has-text-grey has-text-centered">
+                            <p class="has-text-weight-bold">{{tableText}}</p>
+                        </div>
+                    </section>
+                </template>
+            </b-table>
         </template>
     </div>
 </template>
@@ -105,13 +114,15 @@
 import Swal from 'sweetalert2';
 import { mapState, mapActions } from 'vuex';
 import { calculateAge } from '@/utils.js';
-import { alcaldias, municipios } from '@/constants.js';
+import { alcaldias, municipios, askedTypes, zonas } from '@/constants.js';
 import { firebase, usersCollection, patientsCollection, refersCollection } from '@/firebaseConfig.js';
 
 export default {
     props: {
         alcaldias: { type: Array,  default: () => (alcaldias), },
         municipios: { type: Array,  default: () => (municipios), },
+        orientations: { type: Array, default: () => (askedTypes.concat('Todas')), },
+        zonas: { type: Array, default: () => (zonas), },
     },
     data() {
         return {
@@ -119,6 +130,7 @@ export default {
             estado: null,
             alcaldia: null,
             municipio: null,
+            orientation: "Todas",
             //
             gettingTherapists: true,
             referencing: false,
@@ -150,8 +162,10 @@ export default {
         muni(){
             if (this.selectedPatient.data.estado == "CDMX") {
                 return this.selectedPatient.data.alcaldia;
-            } else {
+            } else if (this.selectedPatient.data.estado == 'edoMex') {
                 return this.selectedPatient.data.municipio;
+            } else {
+                return '';
             }
         },
     },
@@ -165,7 +179,12 @@ export default {
             query = query.where(`target.${this.ageGroup}`, '==', true) // que atiendan la edad del paciente
             query = query.where(`symptoms.${this.symptom}`, '==', true);
             query = query.where(`estado`, '==', this.estado);
-            query = this.estado == "CDMX" ? query.where(`officeAlcaldia`, '==', this.alcaldia) : query.where("officeMunicipio", '==', this.municipio);
+            if (this.estado == 'CDMX' || this.estado == 'edoMex') {
+                query = this.estado == "CDMX" ? query.where(`officeAlcaldia`, '==', this.alcaldia) : query.where("officeMunicipio", '==', this.municipio);
+            }
+            if (this.orientation != "Todas") {
+                query = query.where(`orientation.${this.orientation}`, '==', true);
+            }
             // todo pagination?
             try {
                 const docs = await query.get();
@@ -269,7 +288,7 @@ export default {
         if (this.estado == "CDMX") {
             this.alcaldia = this.selectedPatient.data.alcaldia;
             this.municipio = municipios[0];
-        } else {
+        } else if (this.estado == 'edoMex') {
             this.municipio = this.selectedPatient.data.municipio;
             this.alcaldia = alcaldias[0];
         }

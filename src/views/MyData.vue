@@ -92,12 +92,11 @@
                 </div>
             </div>
             <div class="field">
-                <label class="label">Estado donde se encuentra el consultorio</label>
+                <label class="label">Zona donde se encuentra el consultorio</label>
                 <div class="control">
                     <div class="select">
                         <select v-model="profile.estado" @change="changeAlMun">
-                            <option value="CDMX">CDMX</option>
-                            <option value="edoMex">Estado de México</option>
+                            <option v-for="(zona, i) in zonas" :key="i"  :value="zona.value">{{zona.text}}</option>
                         </select>
                     </div>
                 </div>
@@ -112,7 +111,7 @@
                     </div>
                 </div>
             </div>
-            <div v-else class="field">
+            <div v-else-if="profile.estado=='edoMex'" class="field">
                 <label class="label">Municipio del consultorio</label>
                 <div class="control">
                     <div class="select">
@@ -180,7 +179,7 @@
 <script>
 const fb = require('@/firebaseConfig.js');
 import {generateKeywords} from '@/utils.js';
-import { problems, alcaldias, municipios, patientTypes, askedAttentions, askedTypes } from '@/constants.js';
+import { problems, alcaldias, municipios, patientTypes, askedAttentions, askedTypes, zonas } from '@/constants.js';
 import Swal from 'sweetalert2';
 
 export default {
@@ -192,6 +191,7 @@ export default {
         patientTypes: { type: Array, default: () =>(patientTypes) },
         askedAttentions: { type: Array, default: () =>(askedAttentions) },
         askedTypes: { type: Array, default: () =>(askedTypes) },
+        zonas: { type: Array, default: () => (zonas), },
     },
     data() {
         return {
@@ -293,8 +293,11 @@ export default {
             if (this.profile.estado == "CDMX") {
                 this.profile.officeMunicipio = null;
                 this.profile.officeAlcaldia = alcaldias[0];
-            } else {
+            } else if (this.profile.estado == 'edoMex') {
                 this.profile.officeMunicipio = municipios[0];
+                this.profile.officeAlcaldia = null;
+            } else {
+                this.profile.officeMunicipio = null;
                 this.profile.officeAlcaldia = null;
             }
         },
