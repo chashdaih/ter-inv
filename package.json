@@ -14,7 +14,7 @@
     "buefy": "^0.8.3",
     "core-js": "^2.6.5",
     "firebase": "^6.6.0",
-    "lodash-es": "^4.17.15",
+    "lodash-es": "^4.17.21",
     "sweetalert2": "^8.17.6",
     "vee-validate": "^3.0.5",
     "vue": "^2.6.10",
